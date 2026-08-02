@@ -1,8 +1,9 @@
 "use client";
 
-import { useState, useRef } from "react";
+import React, { useState, useRef, useEffect, useCallback, useMemo } from "react";
 import { motion, AnimatePresence, useInView } from "framer-motion";
 import { ArrowLeft, ArrowRight } from "lucide-react";
+import Link from "next/link";
 import { siteConfig } from "@/data/site-config";
 
 /* ─── Certificate Items Extended Metadata ──────────────────── */
@@ -11,24 +12,117 @@ const certificationData = siteConfig.certifications.map((cert) => ({
   title: cert.name,
   issuer: `${cert.institution} · ${cert.date}`,
   description: `Verified credential ${cert.credentialId}. Issued by ${cert.institution} in ${cert.date}. Demonstrating expertise in cloud architecture, full-stack development, and modern web technologies.`,
-  badgeText: cert.institution.includes("Meta") ? "META" : cert.institution.includes("AWS") ? "AWS" : "VERIFIED",
-  themeColor: cert.institution.includes("Meta") ? "#2563eb" : cert.institution.includes("AWS") ? "#d97706" : "#059669",
+  src: cert.logo,
 }));
+
+/* ─── Gap calculator (from CircularTestimonials) ────────────── */
+function calculateGap(width: number) {
+  const minWidth = 300;
+  const maxWidth = 600;
+  const minGap = 40;
+  const maxGap = 76;
+  if (width <= minWidth) return minGap;
+  if (width >= maxWidth)
+    return Math.max(minGap, maxGap + 0.06018 * (width - maxWidth));
+  return minGap + (maxGap - minGap) * ((width - minWidth) / (maxWidth - minWidth));
+}
 
 export default function CertificationsSection() {
   const [activeIndex, setActiveIndex] = useState(0);
+  const [containerWidth, setContainerWidth] = useState(500);
   const containerRef = useRef<HTMLDivElement>(null);
+  const imageContainerRef = useRef<HTMLDivElement>(null);
+  const autoplayRef = useRef<NodeJS.Timeout | null>(null);
   const isInView = useInView(containerRef, { once: true, margin: "-80px" });
 
   const activeCert = certificationData[activeIndex];
+  const count = useMemo(() => certificationData.length, []);
 
-  const handleNext = () => {
-    setActiveIndex((prev) => (prev + 1) % certificationData.length);
-  };
+  // Responsive gap measurement
+  useEffect(() => {
+    function handleResize() {
+      if (imageContainerRef.current) {
+        setContainerWidth(imageContainerRef.current.offsetWidth);
+      }
+    }
+    handleResize();
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
 
-  const handlePrev = () => {
-    setActiveIndex((prev) => (prev - 1 + certificationData.length) % certificationData.length);
-  };
+  // Autoplay
+  useEffect(() => {
+    autoplayRef.current = setInterval(() => {
+      setActiveIndex((prev) => (prev + 1) % count);
+    }, 5000);
+    return () => {
+      if (autoplayRef.current) clearInterval(autoplayRef.current);
+    };
+  }, [count]);
+
+  // Navigation handlers
+  const handleNext = useCallback(() => {
+    setActiveIndex((prev) => (prev + 1) % count);
+    if (autoplayRef.current) clearInterval(autoplayRef.current);
+  }, [count]);
+
+  const handlePrev = useCallback(() => {
+    setActiveIndex((prev) => (prev - 1 + count) % count);
+    if (autoplayRef.current) clearInterval(autoplayRef.current);
+  }, [count]);
+
+  // Keyboard navigation
+  useEffect(() => {
+    const handleKey = (e: KeyboardEvent) => {
+      if (e.key === "ArrowLeft") handlePrev();
+      if (e.key === "ArrowRight") handleNext();
+    };
+    window.addEventListener("keydown", handleKey);
+    return () => window.removeEventListener("keydown", handleKey);
+  }, [handlePrev, handleNext]);
+
+  // 3D image positioning (left, center, right from CircularTestimonials)
+  function getImageStyle(index: number): React.CSSProperties {
+    const gap = calculateGap(containerWidth);
+    const maxStickUp = gap * 0.8;
+    const isActive = index === activeIndex;
+    const isLeft = (activeIndex - 1 + count) % count === index;
+    const isRight = (activeIndex + 1) % count === index;
+
+    if (isActive) {
+      return {
+        zIndex: 3,
+        opacity: 1,
+        pointerEvents: "auto",
+        transform: "translateX(0px) translateY(0px) scale(1) rotateY(0deg)",
+        transition: "all 0.8s cubic-bezier(.4,2,.3,1)",
+      };
+    }
+    if (isLeft) {
+      return {
+        zIndex: 2,
+        opacity: 1,
+        pointerEvents: "auto",
+        transform: `translateX(-${gap}px) translateY(-${maxStickUp}px) scale(0.85) rotateY(15deg)`,
+        transition: "all 0.8s cubic-bezier(.4,2,.3,1)",
+      };
+    }
+    if (isRight) {
+      return {
+        zIndex: 2,
+        opacity: 1,
+        pointerEvents: "auto",
+        transform: `translateX(${gap}px) translateY(-${maxStickUp}px) scale(0.85) rotateY(-15deg)`,
+        transition: "all 0.8s cubic-bezier(.4,2,.3,1)",
+      };
+    }
+    return {
+      zIndex: 1,
+      opacity: 0,
+      pointerEvents: "none",
+      transition: "all 0.8s cubic-bezier(.4,2,.3,1)",
+    };
+  }
 
   return (
     <section
@@ -85,79 +179,39 @@ export default function CertificationsSection() {
         {/* ── 2-Column Split Composition ─────────────────────── */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-14 items-center">
           
-          {/* ════ LEFT COLUMN: 3D Stacked Certificate Cards ════ */}
+          {/* ════ LEFT COLUMN: 3-Photo Perspective Carousel ════ */}
           <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
             animate={isInView ? { opacity: 1, scale: 1 } : {}}
             transition={{ duration: 0.9, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
-            className="flex justify-center lg:justify-start relative min-h-[340px] sm:min-h-[380px]"
+            className="flex justify-center lg:justify-start"
           >
-            <div className="relative w-full max-w-md aspect-[4/3] flex items-center justify-center">
-              
-              {/* Backing Stacked Card 3 (Bottom) */}
-              <div
-                className="absolute inset-0 rounded-3xl bg-zinc-100 border border-zinc-200/60 shadow-sm pointer-events-none transition-all duration-500"
-                style={{
-                  transform: "translateY(24px) scale(0.88)",
-                  opacity: 0.5,
-                }}
-              />
-
-              {/* Backing Stacked Card 2 (Middle) */}
-              <div
-                className="absolute inset-0 rounded-3xl bg-zinc-50 border border-zinc-200/80 shadow-md pointer-events-none transition-all duration-500"
-                style={{
-                  transform: "translateY(12px) scale(0.94)",
-                  opacity: 0.85,
-                }}
-              />
-
-              {/* Active Foreground Card (Top) */}
-              <AnimatePresence mode="wait">
-                <motion.div
-                  key={activeCert.id}
-                  initial={{ opacity: 0, y: 15, scale: 0.96 }}
-                  animate={{ opacity: 1, y: 0, scale: 1 }}
-                  exit={{ opacity: 0, y: -15, scale: 0.96 }}
-                  transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
-                  className="absolute inset-0 rounded-3xl bg-white/95 backdrop-blur-md border border-zinc-200/90 shadow-[0_20px_50px_rgba(0,0,0,0.06)] p-6 sm:p-8 flex flex-col items-center justify-center text-center select-none"
-                >
-                  {/* Top Circular Brand Badge with Color Glow */}
-                  <div
-                    className="w-16 h-16 sm:w-20 sm:h-20 rounded-full flex items-center justify-center font-bold text-xs sm:text-sm tracking-wider mb-6 transition-all duration-500 border"
-                    style={{
-                      borderColor: `${activeCert.themeColor}40`,
-                      backgroundColor: `${activeCert.themeColor}0a`,
-                      color: activeCert.themeColor,
-                      boxShadow: `0 8px 24px -4px ${activeCert.themeColor}30`,
-                    }}
-                  >
-                    {activeCert.badgeText}
-                  </div>
-
-                  {/* Certificate Representation Bars */}
-                  <div className="w-full max-w-[220px] space-y-2.5 mb-6">
-                    {/* Main title bar */}
-                    <div className="h-3.5 bg-zinc-800 rounded-full w-full mx-auto" />
-                    {/* Subtitle bar 1 */}
-                    <div className="h-2 bg-zinc-300/80 rounded-full w-4/5 mx-auto" />
-                    {/* Subtitle bar 2 */}
-                    <div className="h-1.5 bg-zinc-200 rounded-full w-3/5 mx-auto" />
-                  </div>
-
-                  {/* Colored Action Ribbon Badge */}
-                  <div
-                    className="px-6 py-2 rounded-lg text-white font-mono text-[10px] sm:text-xs font-semibold tracking-wider uppercase transition-all duration-500 shadow-sm"
-                    style={{
-                      backgroundColor: activeCert.themeColor,
-                      boxShadow: `0 4px 14px ${activeCert.themeColor}40`,
-                    }}
-                  >
-                    VERIFIED STAMP
-                  </div>
-                </motion.div>
-              </AnimatePresence>
-
+            <div
+              ref={imageContainerRef}
+              className="relative w-full max-w-md"
+              style={{
+                height: "24rem",
+                perspective: "1000px",
+              }}
+            >
+              {certificationData.map((cert, index) => (
+                <img
+                  key={cert.id}
+                  src={cert.src}
+                  alt={cert.title}
+                  draggable={false}
+                  className="select-none"
+                  style={{
+                    position: "absolute",
+                    width: "100%",
+                    height: "100%",
+                    objectFit: "cover",
+                    borderRadius: "1.5rem",
+                    boxShadow: "0 10px 30px rgba(0, 0, 0, 0.2)",
+                    ...getImageStyle(index),
+                  }}
+                />
+              ))}
             </div>
           </motion.div>
 
@@ -194,13 +248,13 @@ export default function CertificationsSection() {
               </motion.div>
             </AnimatePresence>
 
-            {/* Controls: Left & Right Arrows */}
-            <div className="flex items-center gap-3 pt-2">
+            {/* Controls: Arrows + View More */}
+            <div className="flex items-center gap-3 pt-2 flex-wrap">
               <button
                 type="button"
                 onClick={handlePrev}
                 aria-label="Previous certification"
-                className="flex h-11 w-11 items-center justify-center rounded-full border border-zinc-200 bg-white text-zinc-900 shadow-sm transition-all hover:border-zinc-950 hover:bg-zinc-950 hover:text-white"
+                className="flex h-11 w-11 items-center justify-center rounded-full border border-zinc-200 bg-white text-zinc-900 shadow-sm transition-all hover:border-zinc-950 hover:bg-zinc-950 hover:text-white cursor-pointer"
               >
                 <ArrowLeft size={18} strokeWidth={2} />
               </button>
@@ -208,10 +262,47 @@ export default function CertificationsSection() {
                 type="button"
                 onClick={handleNext}
                 aria-label="Next certification"
-                className="flex h-11 w-11 items-center justify-center rounded-full border border-zinc-200 bg-white text-zinc-900 shadow-sm transition-all hover:border-zinc-950 hover:bg-zinc-950 hover:text-white"
+                className="flex h-11 w-11 items-center justify-center rounded-full border border-zinc-200 bg-white text-zinc-900 shadow-sm transition-all hover:border-zinc-950 hover:bg-zinc-950 hover:text-white cursor-pointer"
               >
                 <ArrowRight size={18} strokeWidth={2} />
               </button>
+
+              {/* View More — links to /certificates page */}
+              <Link
+                href="/certificates"
+                className="relative inline-flex items-center gap-2 overflow-hidden cursor-pointer select-none ml-2 group"
+                style={{
+                  padding: "10px 22px",
+                  borderRadius: "999px",
+                  background: "rgba(255,255,255,0.65)",
+                  backdropFilter: "blur(18px) saturate(180%)",
+                  WebkitBackdropFilter: "blur(18px) saturate(180%)",
+                  border: "1px solid rgba(0,0,0,0.08)",
+                  boxShadow: "0 8px 22px rgba(0,0,0,0.05), 0 1px 3px rgba(255,255,255,.25) inset",
+                  fontWeight: 600,
+                  fontSize: "0.85rem",
+                  letterSpacing: "0.02em",
+                  color: "#09090b",
+                  transition: "all 0.35s cubic-bezier(.22,1,.36,1)",
+                }}
+              >
+                {/* Glass reflection */}
+                <span
+                  aria-hidden
+                  className="absolute inset-0 pointer-events-none"
+                  style={{
+                    background:
+                      "linear-gradient(130deg, rgba(255,255,255,0.55), rgba(255,255,255,0.08), transparent 70%)",
+                    opacity: 0.55,
+                    borderRadius: "inherit",
+                  }}
+                />
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="relative z-10">
+                  <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z" />
+                  <circle cx="12" cy="12" r="3" />
+                </svg>
+                <span className="relative z-10 font-geist">View More</span>
+              </Link>
             </div>
           </motion.div>
 

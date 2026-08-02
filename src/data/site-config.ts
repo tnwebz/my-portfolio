@@ -138,7 +138,7 @@ export const siteConfig = {
       institution: "Meta (Coursera)",
       date: "2023",
       credentialId: "META-FE-2023",
-      logo: "/images/cert-meta.svg",
+      logo: "/images/cert-meta.png",
     },
     {
       name: "Google UX Design",
