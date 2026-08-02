@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 
 /**
  * Hook to detect if an element is in the viewport
@@ -31,22 +31,29 @@ export function useInView(
   return { ref, isInView };
 }
 
+function subscribeReducedMotion(callback: () => void) {
+  const query = window.matchMedia("(prefers-reduced-motion: reduce)");
+  query.addEventListener("change", callback);
+  return () => query.removeEventListener("change", callback);
+}
+
+function getReducedMotionSnapshot() {
+  return window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+}
+
+function getReducedMotionServerSnapshot() {
+  return false;
+}
+
 /**
  * Hook to detect reduced motion preference
  */
 export function useReducedMotion(): boolean {
-  const [reducedMotion, setReducedMotion] = useState(false);
-
-  useEffect(() => {
-    const query = window.matchMedia("(prefers-reduced-motion: reduce)");
-    setReducedMotion(query.matches);
-
-    const handler = (e: MediaQueryListEvent) => setReducedMotion(e.matches);
-    query.addEventListener("change", handler);
-    return () => query.removeEventListener("change", handler);
-  }, []);
-
-  return reducedMotion;
+  return useSyncExternalStore(
+    subscribeReducedMotion,
+    getReducedMotionSnapshot,
+    getReducedMotionServerSnapshot
+  );
 }
 
 /**
@@ -67,21 +74,28 @@ export function useMousePosition() {
   return position;
 }
 
+function subscribeWindowSize(callback: () => void) {
+  window.addEventListener("resize", callback);
+  return () => window.removeEventListener("resize", callback);
+}
+
+const emptyWindowSize = { width: 0, height: 0 };
+
+function getWindowSizeSnapshot() {
+  return { width: window.innerWidth, height: window.innerHeight };
+}
+
+function getWindowSizeServerSnapshot() {
+  return emptyWindowSize;
+}
+
 /**
  * Hook to get window dimensions (responsive breakpoint logic)
  */
 export function useWindowSize() {
-  const [size, setSize] = useState({ width: 0, height: 0 });
-
-  useEffect(() => {
-    const handler = () => {
-      setSize({ width: window.innerWidth, height: window.innerHeight });
-    };
-
-    handler(); // Set initial
-    window.addEventListener("resize", handler);
-    return () => window.removeEventListener("resize", handler);
-  }, []);
-
-  return size;
+  return useSyncExternalStore(
+    subscribeWindowSize,
+    getWindowSizeSnapshot,
+    getWindowSizeServerSnapshot
+  );
 }

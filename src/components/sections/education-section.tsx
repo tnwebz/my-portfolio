@@ -471,7 +471,7 @@ export default function EducationSection() {
           }}
         />
         <div
-          className="absolute top-[30%] left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[500px] rounded-full opacity-30 blur-[80px]"
+          className="absolute top-[30%] left-1/2 -translate-x-1/2 -translate-y-1/2 w-200 h-125 rounded-full opacity-30 blur-[80px]"
           style={{ background: "rgba(220,200,170,0.15)" }}
         />
       </div>

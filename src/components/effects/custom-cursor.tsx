@@ -15,7 +15,9 @@ export default function CustomCursor() {
   useEffect(() => {
     // Check if touch device
     if (window.matchMedia("(pointer: coarse)").matches) {
-      setIsTouchDevice(true);
+      queueMicrotask(() => {
+        setIsTouchDevice(true);
+      });
       return;
     }
 

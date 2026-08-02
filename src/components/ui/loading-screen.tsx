@@ -75,9 +75,10 @@ export default function LoadingScreen() {
   useEffect(() => {
     const query = window.matchMedia("(prefers-reduced-motion: reduce)");
     if (query.matches) {
-      setReducedMotion(true);
-      setIsLoading(false);
-      return;
+      queueMicrotask(() => {
+        setReducedMotion(true);
+        setIsLoading(false);
+      });
     }
   }, []);
 

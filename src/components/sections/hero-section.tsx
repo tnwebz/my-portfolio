@@ -29,20 +29,10 @@ const SOCIAL_LINKS = [
 // ─── Component ───────────────────────────────────────────────
 export default function HeroSection() {
   const [drawerOpen, setDrawerOpen] = useState(false);
-  const [mounted, setMounted] = useState(false);
-  const [scrolled, setScrolled] = useState(false);
   const [showScrollNav, setShowScrollNav] = useState(false);
 
   useEffect(() => {
-    setMounted(true);
-
     const handleScroll = () => {
-      if (window.scrollY > 40) {
-        setScrolled(true);
-      } else {
-        setScrolled(false);
-      }
-
       if (window.scrollY > window.innerHeight * 0.95) {
         setShowScrollNav(true);
       } else {
@@ -73,8 +63,6 @@ export default function HeroSection() {
   const closeDrawer = useCallback(() => {
     setDrawerOpen(false);
   }, []);
-
-  if (!mounted) return null;
 
   return (
     <section id="hero" className="relative h-[100dvh] w-full overflow-hidden">

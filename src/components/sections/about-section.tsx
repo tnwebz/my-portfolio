@@ -37,7 +37,7 @@ export default function AboutSection() {
     >
       {/* Background ambient lighting */}
       <div
-        className="absolute top-1/3 left-10 w-[500px] h-[500px] rounded-full pointer-events-none opacity-20 blur-[120px]"
+        className="absolute top-1/3 left-10 w-125 h-125 rounded-full pointer-events-none opacity-20 blur-[120px]"
         style={{
           background: "radial-gradient(circle, rgba(239,68,68,0.15) 0%, rgba(0,0,0,0) 70%)",
         }}
@@ -135,7 +135,7 @@ export default function AboutSection() {
               transition={{ duration: 0.8, delay: 0.5, ease: [0.22, 1, 0.36, 1] }}
               className="grid grid-cols-2 sm:grid-cols-4 gap-4 pt-4"
             >
-              {siteConfig.about.stats.map((stat, index) => (
+              {siteConfig.about.stats.map((stat) => (
                 <motion.div
                   key={stat.label}
                   whileHover={{ y: -4, scale: 1.02 }}

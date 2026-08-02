@@ -5,6 +5,7 @@ import ClientShell from "@/components/ui/client-shell";
 import "./globals.css";
 
 export const metadata: Metadata = {
+  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || "https://nithish.dev"),
   title: "Nithish — S S | Senior Developer & Architect",
   description:
     "Portfolio of Nithish S S — Senior Developer, Architect, and UI/UX Developer crafting premium digital experiences with cutting-edge technology.",
