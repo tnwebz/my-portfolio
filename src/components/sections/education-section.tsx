@@ -218,7 +218,15 @@ function EducationCard({
   );
 }
 
-function TimelineNode({ index, isInView }: { index: number; isInView: boolean }) {
+function TimelineNode({
+  index,
+  isInView,
+  isActive,
+}: {
+  index: number;
+  isInView: boolean;
+  isActive: boolean;
+}) {
   return (
     <motion.div
       initial={{ scale: 0 }}
@@ -226,7 +234,7 @@ function TimelineNode({ index, isInView }: { index: number; isInView: boolean })
       transition={{ duration: 0.4, delay: 0.15 + index * 0.2, ease: [0.16, 1, 0.3, 1] }}
       className="relative z-10 flex items-center justify-center"
     >
-      <div className="w-[14px] h-[14px] rounded-full bg-white border-[2.5px] border-zinc-300 shadow-[0_0_8px_rgba(0,0,0,0.06)]" />
+      <div className={`timeline-node ${isActive ? "active" : ""}`} />
     </motion.div>
   );
 }
@@ -299,16 +307,161 @@ function TabSwitcher({
 
 /* ─── Education Panel ──────────────────────────────────────── */
 function EducationPanel({ isInView }: { isInView: boolean }) {
+  const desktopContainerRef = useRef<HTMLDivElement>(null);
+  const mobileContainerRef = useRef<HTMLDivElement>(null);
+  const desktopNodeRefs = useRef<(HTMLDivElement | null)[]>([]);
+  const mobileNodeRefs = useRef<(HTMLDivElement | null)[]>([]);
+
+  const [desktopActiveNodes, setDesktopActiveNodes] = useState<boolean[]>([false, false, false]);
+  const [mobileActiveNodes, setMobileActiveNodes] = useState<boolean[]>([false, false, false]);
+  const [beamPosDesktop, setBeamPosDesktop] = useState<number>(0);
+  const [beamPosMobile, setBeamPosMobile] = useState<number>(0);
+
+  useEffect(() => {
+    let animFrameId: number;
+
+    const checkProximity = (timestamp: number) => {
+      const duration = 3500;
+      const progress = (timestamp % duration) / duration;
+
+      // Check Desktop
+      if (desktopContainerRef.current) {
+        const lineRect = desktopContainerRef.current.getBoundingClientRect();
+        const beamY = (1 - progress) * (lineRect.height + 260) - 130;
+        const beamCenterY = beamY + 110;
+        setBeamPosDesktop(beamY);
+
+        const newActive = educationData.map((_, i) => {
+          const nodeEl = desktopNodeRefs.current[i];
+          if (!nodeEl) return false;
+          const nodeRect = nodeEl.getBoundingClientRect();
+          const nodeY = nodeRect.top - lineRect.top + nodeRect.height / 2;
+          return Math.abs(beamCenterY - nodeY) < 95;
+        });
+
+        setDesktopActiveNodes((prev) => {
+          if (prev.some((val, idx) => val !== newActive[idx])) {
+            return newActive;
+          }
+          return prev;
+        });
+      }
+
+      // Check Mobile
+      if (mobileContainerRef.current) {
+        const lineRect = mobileContainerRef.current.getBoundingClientRect();
+        const beamY = (1 - progress) * (lineRect.height + 260) - 130;
+        const beamCenterY = beamY + 110;
+        setBeamPosMobile(beamY);
+
+        const newActive = educationData.map((_, i) => {
+          const nodeEl = mobileNodeRefs.current[i];
+          if (!nodeEl) return false;
+          const nodeRect = nodeEl.getBoundingClientRect();
+          const nodeY = nodeRect.top - lineRect.top + nodeRect.height / 2;
+          return Math.abs(beamCenterY - nodeY) < 95;
+        });
+
+        setMobileActiveNodes((prev) => {
+          if (prev.some((val, idx) => val !== newActive[idx])) {
+            return newActive;
+          }
+          return prev;
+        });
+      }
+
+      animFrameId = requestAnimationFrame(checkProximity);
+    };
+
+    animFrameId = requestAnimationFrame(checkProximity);
+    return () => cancelAnimationFrame(animFrameId);
+  }, []);
+
   return (
     <div>
+      {/* Styles for Timeline Laser & Node Active States */}
+      <style>{`
+        .timeline-line-base {
+          position: absolute;
+          left: 50%;
+          transform: translateX(-50%);
+          width: 3px;
+          height: 100%;
+          background: rgba(255, 45, 45, 0.14);
+          border-radius: 999px;
+          overflow: hidden;
+          pointer-events: none;
+        }
+
+        .timeline-line-base-mobile {
+          position: absolute;
+          left: 6px;
+          top: 0;
+          bottom: 16px;
+          width: 3px;
+          height: 100%;
+          background: rgba(255, 45, 45, 0.14);
+          border-radius: 999px;
+          overflow: hidden;
+          pointer-events: none;
+        }
+
+        .timeline-laser-beam {
+          position: absolute;
+          left: 50%;
+          width: 7px;
+          height: 220px;
+          border-radius: 999px;
+          background: linear-gradient(
+            180deg,
+            rgba(255, 255, 255, 0) 0%,
+            rgba(255, 80, 80, 0.4) 15%,
+            #ff3030 45%,
+            #ff0000 55%,
+            rgba(255, 80, 80, 0.4) 85%,
+            rgba(255, 255, 255, 0) 100%
+          );
+          filter: blur(1.5px);
+          box-shadow:
+            0 0 12px #ff3b3b,
+            0 0 24px #ff3030,
+            0 0 40px rgba(255, 0, 0, 0.5);
+          will-change: transform;
+        }
+
+        .timeline-node {
+          width: 18px;
+          height: 18px;
+          background: white;
+          border: 3px solid #d8d8d8;
+          border-radius: 50%;
+          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+          transition: transform 0.35s ease, border-color 0.35s ease, box-shadow 0.35s ease;
+        }
+
+        .timeline-node.active {
+          border-color: #ff2d2d;
+          box-shadow:
+            0 0 10px #ff4d4d,
+            0 0 20px rgba(255, 0, 0, 0.5),
+            0 4px 20px rgba(255, 0, 0, 0.25);
+          transform: scale(1.18);
+        }
+      `}</style>
+
       {/* Desktop timeline */}
-      <div className="hidden lg:block relative pb-4">
+      <div ref={desktopContainerRef} className="hidden lg:block relative pb-4">
         <motion.div
-          initial={{ scaleY: 0 }}
-          animate={isInView ? { scaleY: 1 } : {}}
-          transition={{ duration: 1.2, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
-          className="absolute top-0 bottom-0 left-1/2 -translate-x-1/2 w-[1.5px] bg-zinc-300/50 origin-top"
-        />
+          initial={{ opacity: 0 }}
+          animate={isInView ? { opacity: 1 } : {}}
+          transition={{ duration: 0.8, delay: 0.1 }}
+          className="timeline-line-base"
+        >
+          <div
+            className="timeline-laser-beam"
+            style={{ transform: `translate(-50%, ${beamPosDesktop}px)` }}
+          />
+        </motion.div>
         <div className="flex flex-col gap-10 xl:gap-12">
           {educationData.map((item, index) => {
             const isRight = item.side === "right";
@@ -317,8 +470,13 @@ function EducationPanel({ isInView }: { isInView: boolean }) {
                 <div className="flex justify-end pr-8">
                   {!isRight && <EducationCard item={item} index={index} isInView={isInView} />}
                 </div>
-                <div className="relative z-10 shrink-0">
-                  <TimelineNode index={index} isInView={isInView} />
+                <div
+                  ref={(el) => {
+                    desktopNodeRefs.current[index] = el;
+                  }}
+                  className="relative z-10 shrink-0"
+                >
+                  <TimelineNode index={index} isInView={isInView} isActive={desktopActiveNodes[index]} />
                 </div>
                 <div className="flex justify-start pl-8">
                   {isRight && <EducationCard item={item} index={index} isInView={isInView} />}
@@ -330,18 +488,28 @@ function EducationPanel({ isInView }: { isInView: boolean }) {
       </div>
 
       {/* Mobile timeline */}
-      <div className="lg:hidden relative pb-4 pl-2">
+      <div ref={mobileContainerRef} className="lg:hidden relative pb-4 pl-2">
         <motion.div
-          initial={{ scaleY: 0 }}
-          animate={isInView ? { scaleY: 1 } : {}}
-          transition={{ duration: 1.2, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
-          className="absolute left-[6px] top-0 bottom-4 w-[1.5px] bg-zinc-300/50 origin-top"
-        />
+          initial={{ opacity: 0 }}
+          animate={isInView ? { opacity: 1 } : {}}
+          transition={{ duration: 0.8, delay: 0.1 }}
+          className="timeline-line-base-mobile"
+        >
+          <div
+            className="timeline-laser-beam"
+            style={{ transform: `translate(-50%, ${beamPosMobile}px)` }}
+          />
+        </motion.div>
         <div className="flex flex-col gap-8 pl-10">
           {educationData.map((item, index) => (
             <div key={index} className="relative">
-              <div className="absolute -left-[34px] top-6">
-                <TimelineNode index={index} isInView={isInView} />
+              <div
+                ref={(el) => {
+                  mobileNodeRefs.current[index] = el;
+                }}
+                className="absolute -left-[34px] top-6"
+              >
+                <TimelineNode index={index} isInView={isInView} isActive={mobileActiveNodes[index]} />
               </div>
               <EducationCard item={item} index={index} isInView={isInView} />
             </div>

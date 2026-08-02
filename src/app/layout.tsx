@@ -58,6 +58,12 @@ export default function RootLayout({
           rel="stylesheet"
         />
 
+        {/* Clash Display — Hero display font */}
+        <link
+          href="https://api.fontshare.com/v2/css?f[]=clash-display@200,300,400,500,600,700&display=swap"
+          rel="stylesheet"
+        />
+
         {/* Preconnect for performance */}
         <link rel="preconnect" href="https://db.onlinewebfonts.com" />
         

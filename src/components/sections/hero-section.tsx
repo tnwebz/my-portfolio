@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { X } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import HeroSVGTextReveal from "@/components/ui/hero-svg-text-reveal";
 
 // ─── Type Definitions ────────────────────────────────────────
 type EaseTuple = [number, number, number, number];
@@ -112,13 +113,8 @@ export default function HeroSection() {
       {/* ═══════════════════════════════════════════════════════
           LAYER 2 — Giant faded DEVELOPER (rises from below)
           ═══════════════════════════════════════════════════════ */}
-      <div className="pointer-events-none absolute inset-x-0 top-[16vh] sm:top-[14vh] md:top-[25vh] z-10 flex justify-center overflow-hidden w-full max-w-full">
-        <h1
-          aria-label="Developer"
-          className="developer-rise developer-gradient select-none font-hn text-[20vw] font-light leading-[0.85] tracking-[-0.05em] sm:text-[18vw] md:text-[16vw] lg:text-[15vw]"
-        >
-          DEVELOPER
-        </h1>
+      <div className="pointer-events-none absolute inset-x-0 top-[38vh] sm:top-[25vh] md:top-[20vh] z-10 flex justify-center overflow-hidden w-full max-w-full">
+        <HeroSVGTextReveal topText="DEVELOPER" revealText="NITHISH S S" />
       </div>
 
       {/* ═══════════════════════════════════════════════════════
@@ -158,46 +154,78 @@ export default function HeroSection() {
       <header className="fixed inset-x-0 top-0 w-screen pointer-events-none z-50">
         <AnimatePresence>
           {!showScrollNav && (
-            <motion.nav 
+            <motion.nav
               key="hero-nav"
-              initial={{ opacity: 0, scale: 0.96, y: -10, x: "-50%", filter: "blur(8px)" }}
-              animate={{ 
-                opacity: 1, 
-                scale: 1.0, 
-                y: 24, 
+              initial={{
+                opacity: 0,
+                scale: 0.96,
+                y: -10,
+                x: "-50%",
+                filter: "blur(8px)",
+              }}
+              animate={{
+                opacity: 1,
+                scale: 1.0,
+                y: 24,
                 x: "-50%",
                 filter: "blur(0px)",
-                width: "calc(min(100% - 32px, 480px))"
+                width: "calc(min(100% - 32px, 480px))",
               }}
-              exit={{ opacity: 0, scale: 0.96, y: -10, x: "-50%", filter: "blur(8px)" }}
+              exit={{
+                opacity: 0,
+                scale: 0.96,
+                y: -10,
+                x: "-50%",
+                filter: "blur(8px)",
+              }}
               whileHover={{
                 y: 22,
-                transition: { duration: 0.2, ease: "easeOut" }
+                transition: { duration: 0.2, ease: "easeOut" },
               }}
-              transition={{ 
+              transition={{
                 type: "tween",
                 ease: [0.22, 1, 0.36, 1],
-                duration: 0.4
+                duration: 0.4,
               }}
               className="fixed left-1/2 pointer-events-auto flex items-center justify-between sm:justify-center gap-6 sm:gap-12 rounded-full glass-nav-premium px-8 sm:px-10 h-[68px] select-none"
             >
               {/* Left links (Desktop) */}
               <div className="hidden sm:flex items-center gap-8 z-10">
-                <a href="#about" className="text-sm font-semibold text-zinc-800 hover:text-zinc-950 transition-colors">About</a>
-                <a href="#projects" className="text-sm font-semibold text-zinc-800 hover:text-zinc-950 transition-colors">Projects</a>
+                <a
+                  href="#about"
+                  className="text-sm font-semibold text-zinc-800 hover:text-zinc-950 transition-colors"
+                >
+                  About
+                </a>
+                <a
+                  href="#projects"
+                  className="text-sm font-semibold text-zinc-800 hover:text-zinc-950 transition-colors"
+                >
+                  Projects
+                </a>
               </div>
 
               {/* Center Logo */}
-              <a href="#top" className="flex items-center gap-3 group shrink-0 z-10">
+              <a
+                href="#top"
+                className="flex items-center gap-3 group shrink-0 z-10"
+              >
                 <div className="flex h-8 w-8 items-center justify-center rounded-full bg-zinc-950 text-white font-geist font-bold text-sm transition-transform group-hover:scale-105">
                   N
                 </div>
-                <span className="font-geist font-extrabold text-sm text-zinc-950 tracking-tight">Nithish S S</span>
+                <span className="font-geist font-extrabold text-sm text-zinc-950 tracking-tight">
+                  Nithish S S
+                </span>
               </a>
 
               {/* Right links (Desktop) */}
               <div className="hidden sm:flex items-center gap-8 z-10">
-                <a href="#contact" className="text-sm font-semibold text-zinc-800 hover:text-zinc-950 transition-colors">Contact</a>
+                <a
+                  href="#contact"
+                  className="text-sm font-semibold text-zinc-800 hover:text-zinc-950 transition-colors"
+                >
+                  Contact
+                </a>
               </div>
 
               {/* Mobile Hamburger (Visible only on mobile) */}
@@ -240,46 +268,78 @@ export default function HeroSection() {
           )}
 
           {showScrollNav && (
-            <motion.nav 
+            <motion.nav
               key="scroll-nav"
-              initial={{ opacity: 0, scale: 0.9, y: -10, x: "-50%", filter: "blur(8px)" }}
-              animate={{ 
-                opacity: 1, 
-                scale: 1.0, 
-                y: 12, 
+              initial={{
+                opacity: 0,
+                scale: 0.9,
+                y: -10,
+                x: "-50%",
+                filter: "blur(8px)",
+              }}
+              animate={{
+                opacity: 1,
+                scale: 1.0,
+                y: 12,
                 x: "-50%",
                 filter: "blur(0px)",
-                width: "calc(min(100% - 32px, 360px))"
+                width: "calc(min(100% - 32px, 360px))",
               }}
-              exit={{ opacity: 0, scale: 0.9, y: -10, x: "-50%", filter: "blur(8px)" }}
+              exit={{
+                opacity: 0,
+                scale: 0.9,
+                y: -10,
+                x: "-50%",
+                filter: "blur(8px)",
+              }}
               whileHover={{
                 y: 10,
-                transition: { duration: 0.2, ease: "easeOut" }
+                transition: { duration: 0.2, ease: "easeOut" },
               }}
-              transition={{ 
+              transition={{
                 type: "tween",
                 ease: [0.22, 1, 0.36, 1],
-                duration: 0.4
+                duration: 0.4,
               }}
               className="fixed left-1/2 pointer-events-auto flex items-center justify-between sm:justify-center gap-4 sm:gap-8 rounded-full glass-nav-premium px-6 h-[52px] select-none"
             >
               {/* Left links (Desktop - compact) */}
               <div className="hidden sm:flex items-center gap-6 z-10">
-                <a href="#about" className="text-xs font-semibold text-zinc-800 hover:text-zinc-950 transition-colors">About</a>
-                <a href="#projects" className="text-xs font-semibold text-zinc-800 hover:text-zinc-950 transition-colors">Projects</a>
+                <a
+                  href="#about"
+                  className="text-xs font-semibold text-zinc-800 hover:text-zinc-950 transition-colors"
+                >
+                  About
+                </a>
+                <a
+                  href="#projects"
+                  className="text-xs font-semibold text-zinc-800 hover:text-zinc-950 transition-colors"
+                >
+                  Projects
+                </a>
               </div>
 
               {/* Center Logo - compact */}
-              <a href="#top" className="flex items-center gap-2 group shrink-0 z-10">
+              <a
+                href="#top"
+                className="flex items-center gap-2 group shrink-0 z-10"
+              >
                 <div className="flex h-6 w-6 items-center justify-center rounded-full bg-zinc-950 text-white font-geist font-bold text-xs transition-transform group-hover:scale-105">
                   N
                 </div>
-                <span className="font-geist font-bold text-xs text-zinc-950 tracking-tight">Nithish</span>
+                <span className="font-geist font-bold text-xs text-zinc-950 tracking-tight">
+                  Nithish
+                </span>
               </a>
 
               {/* Right links (Desktop - compact) */}
               <div className="hidden sm:flex items-center gap-6 z-10">
-                <a href="#contact" className="text-xs font-semibold text-zinc-800 hover:text-zinc-950 transition-colors">Contact</a>
+                <a
+                  href="#contact"
+                  className="text-xs font-semibold text-zinc-800 hover:text-zinc-950 transition-colors"
+                >
+                  Contact
+                </a>
               </div>
 
               {/* Mobile Hamburger (Visible only on mobile - compact) */}
@@ -476,20 +536,6 @@ export default function HeroSection() {
           animation: developer-rise 1.8s cubic-bezier(0.22, 1, 0.36, 1) 0.35s
             both;
           will-change: transform, opacity;
-        }
-        .developer-gradient {
-          background-image: linear-gradient(
-            to bottom,
-            #09090b 0%,
-            #09090b 28%,
-            rgba(9, 9, 11, 0.55) 55%,
-            rgba(9, 9, 11, 0.18) 78%,
-            rgba(9, 9, 11, 0) 100%
-          );
-          -webkit-background-clip: text;
-          background-clip: text;
-          -webkit-text-fill-color: transparent;
-          color: transparent;
         }
 
         @keyframes hero-fade-in {

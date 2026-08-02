@@ -5,6 +5,7 @@ import { motion, useInView } from "framer-motion";
 import { ArrowLeft, ArrowRight, ArrowUpRight, Github } from "lucide-react";
 import { siteConfig } from "@/data/site-config";
 import ProjectDetailModal, { ProjectDetailData } from "@/components/ui/project-detail-modal";
+import BorderGlow from "@/components/ui/border-glow";
 
 /* ─── Wireframe Cube Icon Component ─────────────────────────── */
 function WireframeCube() {
@@ -173,87 +174,100 @@ export default function ProjectsSection() {
                 onClick={() => handleOpenDetail(project)}
                 className="group flex w-[min(100%,290px)] sm:w-[320px] lg:w-[340px] shrink-0 snap-start flex-col transition-transform duration-300 hover:-translate-y-1.5 cursor-pointer"
               >
-                {/* ── Top Part: Light Silver/Zinc Image Box ───── */}
-                <div className="relative h-48 sm:h-56 w-full overflow-hidden rounded-t-3xl bg-[#e5e5e5] border-t border-x border-zinc-300/60 flex flex-col items-center justify-center text-center p-4">
-                  {project.image && project.image !== "/images/placeholder-project.svg" ? (
-                    <img
-                      src={project.image}
-                      alt={project.title}
-                      className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
-                    />
-                  ) : (
-                    <div className="flex flex-col items-center justify-center space-y-2">
-                      <WireframeCube />
-                      <span className="font-mono text-[11px] font-semibold tracking-widest text-zinc-500 uppercase">
-                        IMG — {String(idx + 1).padStart(2, "0")}
-                      </span>
-                    </div>
-                  )}
-
-                  {/* Featured Tag */}
-                  {project.featured && (
-                    <div className="absolute top-4 left-4 rounded-full bg-zinc-950/80 px-2.5 py-0.5 text-[10px] font-mono font-medium text-white backdrop-blur-xs">
-                      Featured
-                    </div>
-                  )}
-                </div>
-
-                {/* ── Bottom Part: Black Card Body ───────────── */}
-                <div className="flex flex-1 flex-col justify-between rounded-b-3xl bg-[#09090b] p-6 sm:p-7 text-white shadow-xl border-b border-x border-zinc-900">
-                  <div>
-                    {/* Tech Stack Pills */}
-                    {project.tech && project.tech.length > 0 && (
-                      <div className="mb-4 flex flex-wrap gap-1.5">
-                        {project.tech.map((tech) => (
-                          <span
-                            key={tech}
-                            className="rounded-full border border-zinc-800 bg-zinc-900/90 px-3 py-0.5 text-[11px] font-medium text-zinc-300"
-                          >
-                            {tech}
-                          </span>
-                        ))}
+                <BorderGlow
+                  interactive={true}
+                  edgeSensitivity={30}
+                  glowColor="0 100 50"
+                  backgroundColor="transparent"
+                  borderRadius={24}
+                  glowRadius={36}
+                  glowIntensity={1.0}
+                  coneSpread={28}
+                  colors={['#c084fc', '#f472b6', '#38bdf8']}
+                  className="w-full h-full flex flex-col"
+                >
+                  {/* ── Top Part: Light Silver/Zinc Image Box ───── */}
+                  <div className="relative h-48 sm:h-56 w-full overflow-hidden rounded-t-[23px] bg-[#e5e5e5] border-t border-x border-zinc-300/60 flex flex-col items-center justify-center text-center p-4">
+                    {project.image && project.image !== "/images/placeholder-project.svg" ? (
+                      <img
+                        src={project.image}
+                        alt={project.title}
+                        className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                      />
+                    ) : (
+                      <div className="flex flex-col items-center justify-center space-y-2">
+                        <WireframeCube />
+                        <span className="font-mono text-[11px] font-semibold tracking-widest text-zinc-500 uppercase">
+                          IMG — {String(idx + 1).padStart(2, "0")}
+                        </span>
                       </div>
                     )}
 
-                    {/* Project Title */}
-                    <h3 className="mb-2 font-geist text-lg sm:text-xl font-bold tracking-tight text-white group-hover:text-zinc-100">
-                      {project.title}
-                    </h3>
-
-                    {/* Description */}
-                    <p className="mb-6 font-geist text-xs sm:text-sm leading-relaxed text-zinc-400 line-clamp-3">
-                      {project.description}
-                    </p>
-                  </div>
-
-                  {/* Actions & Links */}
-                  <div className="flex items-center justify-between border-t border-zinc-800/80 pt-4">
-                    <button
-                      type="button"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleOpenDetail(project);
-                      }}
-                      className="inline-flex items-center gap-1.5 font-mono text-xs font-semibold uppercase tracking-wider text-white transition-colors hover:text-laser-red cursor-pointer"
-                    >
-                      <span>Read more</span>
-                      <ArrowRight size={14} strokeWidth={2} className="transition-transform group-hover:translate-x-1" />
-                    </button>
-
-                    {project.githubUrl && project.githubUrl !== "#" && (
-                      <a
-                        href={project.githubUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        onClick={(e) => e.stopPropagation()}
-                        aria-label={`${project.title} GitHub repository`}
-                        className="text-zinc-400 transition-colors hover:text-white"
-                      >
-                        <Github size={16} />
-                      </a>
+                    {/* Featured Tag */}
+                    {project.featured && (
+                      <div className="absolute top-4 left-4 rounded-full bg-zinc-950/80 px-2.5 py-0.5 text-[10px] font-mono font-medium text-white backdrop-blur-xs">
+                        Featured
+                      </div>
                     )}
                   </div>
-                </div>
+
+                  {/* ── Bottom Part: Black Card Body ───────────── */}
+                  <div className="flex flex-1 flex-col justify-between rounded-b-[23px] bg-[#09090b] p-6 sm:p-7 text-white shadow-xl border-b border-x border-zinc-900">
+                    <div>
+                      {/* Tech Stack Pills */}
+                      {project.tech && project.tech.length > 0 && (
+                        <div className="mb-4 flex flex-wrap gap-1.5">
+                          {project.tech.map((tech) => (
+                            <span
+                              key={tech}
+                              className="rounded-full border border-zinc-800 bg-zinc-900/90 px-3 py-0.5 text-[11px] font-medium text-zinc-300"
+                            >
+                              {tech}
+                            </span>
+                          ))}
+                        </div>
+                      )}
+
+                      {/* Project Title */}
+                      <h3 className="mb-2 font-geist text-lg sm:text-xl font-bold tracking-tight text-white group-hover:text-zinc-100">
+                        {project.title}
+                      </h3>
+
+                      {/* Description */}
+                      <p className="mb-6 font-geist text-xs sm:text-sm leading-relaxed text-zinc-400 line-clamp-3">
+                        {project.description}
+                      </p>
+                    </div>
+
+                    {/* Actions & Links */}
+                    <div className="flex items-center justify-between border-t border-zinc-800/80 pt-4">
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleOpenDetail(project);
+                        }}
+                        className="inline-flex items-center gap-1.5 font-mono text-xs font-semibold uppercase tracking-wider text-white transition-colors hover:text-laser-red cursor-pointer"
+                      >
+                        <span>Read more</span>
+                        <ArrowRight size={14} strokeWidth={2} className="transition-transform group-hover:translate-x-1" />
+                      </button>
+
+                      {project.githubUrl && project.githubUrl !== "#" && (
+                        <a
+                          href={project.githubUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          onClick={(e) => e.stopPropagation()}
+                          aria-label={`${project.title} GitHub repository`}
+                          className="text-zinc-400 transition-colors hover:text-white"
+                        >
+                          <Github size={16} />
+                        </a>
+                      )}
+                    </div>
+                  </div>
+                </BorderGlow>
               </article>
             ))}
           </div>

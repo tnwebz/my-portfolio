@@ -148,33 +148,92 @@ export default function CertificationsSection() {
       </div>
 
       <div className="page-shell relative z-10">
-        {/* ── Section Header Tag & Editorial Title ──────────── */}
-        <div className="mb-10 sm:mb-12">
-          <motion.div
-            initial={{ opacity: 0, y: 15 }}
-            animate={isInView ? { opacity: 1, y: 0 } : {}}
-            transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-            className="flex items-center gap-2 mb-4"
+        {/* ── Section Header — Large SVG "Verified Credentials" with bottom fade ── */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={isInView ? { opacity: 1, y: 0 } : {}}
+          transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
+          className="mb-8 sm:mb-12 pointer-events-none select-none"
+        >
+          <svg
+            viewBox="0 0 1100 160"
+            preserveAspectRatio="xMinYMid meet"
+            className="w-full max-w-[950px]"
+            style={{ overflow: "visible" }}
+            aria-label="Verified Credentials"
           >
-            <span className="text-xs uppercase tracking-[0.25em] text-laser-red font-mono font-semibold">
-              04 &mdash; CERTIFICATIONS
-            </span>
-          </motion.div>
-
-          <motion.h2
-            initial={{ opacity: 0, y: 25 }}
-            animate={isInView ? { opacity: 1, y: 0 } : {}}
-            transition={{ duration: 0.8, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
-            className="text-4xl sm:text-6xl lg:text-7xl xl:text-8xl tracking-tight leading-none"
-          >
-            <span className="font-geist font-extrabold text-zinc-950">
-              Verified{" "}
-            </span>
-            <span className="font-serif italic font-light text-zinc-400">
-              Credentials
-            </span>
-          </motion.h2>
-        </div>
+            <defs>
+              <linearGradient
+                id="certTextGradient"
+                x1="0%"
+                y1="0%"
+                x2="0%"
+                y2="100%"
+              >
+                <stop offset="0%" stopColor="#09090b" stopOpacity="1" />
+                <stop offset="50%" stopColor="#09090b" stopOpacity="1" />
+                <stop offset="72%" stopColor="#09090b" stopOpacity="0.55" />
+                <stop offset="88%" stopColor="#09090b" stopOpacity="0.2" />
+                <stop offset="100%" stopColor="#09090b" stopOpacity="0" />
+              </linearGradient>
+              <linearGradient
+                id="certItalicGradient"
+                x1="0%"
+                y1="0%"
+                x2="0%"
+                y2="100%"
+              >
+                <stop offset="0%" stopColor="#52525b" stopOpacity="1" />
+                <stop offset="50%" stopColor="#52525b" stopOpacity="1" />
+                <stop offset="72%" stopColor="#52525b" stopOpacity="0.55" />
+                <stop offset="88%" stopColor="#52525b" stopOpacity="0.2" />
+                <stop offset="100%" stopColor="#52525b" stopOpacity="0" />
+              </linearGradient>
+              <filter
+                id="certDropShadow"
+                x="-10%"
+                y="-10%"
+                width="120%"
+                height="150%"
+              >
+                <feGaussianBlur in="SourceAlpha" stdDeviation="4" result="blur" />
+                <feOffset in="blur" dx="0" dy="10" result="offsetBlur" />
+                <feComponentTransfer in="offsetBlur" result="fadedShadow">
+                  <feFuncA type="linear" slope="0.12" />
+                </feComponentTransfer>
+                <feMerge>
+                  <feMergeNode in="fadedShadow" />
+                  <feMergeNode in="SourceGraphic" />
+                </feMerge>
+              </filter>
+            </defs>
+            <text
+              x="0"
+              y="95"
+              filter="url(#certDropShadow)"
+              style={{
+                fontFamily: 'var(--font-geist), "Inter", sans-serif',
+                fontWeight: 800,
+                fontSize: "110px",
+                letterSpacing: "-0.03em",
+                textAnchor: "start",
+                dominantBaseline: "central",
+              }}
+            >
+              <tspan fill="url(#certTextGradient)">Verified </tspan>
+              <tspan
+                fill="url(#certItalicGradient)"
+                style={{
+                  fontFamily: 'Georgia, Cambria, "Times New Roman", Times, serif',
+                  fontStyle: "italic",
+                  fontWeight: 300,
+                }}
+              >
+                Credentials
+              </tspan>
+            </text>
+          </svg>
+        </motion.div>
 
         {/* ── 2-Column Split Composition ─────────────────────── */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-14 items-center">
