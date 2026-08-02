@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="800" height="600" viewBox="0 0 800 600" fill="none">
+  <rect width="800" height="600" fill="#eff6ff"/>
+  <rect x="40" y="40" width="720" height="520" rx="16" fill="#ffffff" stroke="#bfdbfe" stroke-width="2"/>
+  <circle cx="400" cy="220" r="64" fill="#dbeafe" stroke="#3b82f6" stroke-width="3"/>
+  <text x="400" y="232" text-anchor="middle" font-family="system-ui,sans-serif" font-size="22" font-weight="700" fill="#2563eb">META</text>
+  <rect x="200" y="320" width="400" height="16" rx="8" fill="#09090b" opacity="0.85"/>
+  <rect x="250" y="356" width="300" height="10" rx="5" fill="#94a3b8"/>
+  <rect x="300" y="386" width="200" height="10" rx="5" fill="#cbd5e1"/>
+  <rect x="340" y="430" width="120" height="36" rx="8" fill="#3b82f6"/>
+</svg>

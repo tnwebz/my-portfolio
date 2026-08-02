@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200" viewBox="0 0 200 200" fill="none">
+  <!-- Geometric mark: isometric block with diagonal stripe face -->
+  <g transform="translate(40, 30)">
+    <!-- Top face — striped -->
+    <defs>
+      <clipPath id="topFace">
+        <path d="M60 0 L120 34.64 L60 69.28 L0 34.64 Z"/>
+      </clipPath>
+    </defs>
+    <g clip-path="url(#topFace)">
+      <path d="M60 0 L120 34.64 L60 69.28 L0 34.64 Z" fill="#111"/>
+      <g transform="translate(60, 34.64) rotate(-30)">
+        <rect x="-90" y="-8" width="180" height="10" fill="#f4f4f4"/>
+        <rect x="-90" y="12" width="180" height="10" fill="#f4f4f4"/>
+        <rect x="-90" y="32" width="180" height="10" fill="#f4f4f4"/>
+        <rect x="-90" y="-28" width="180" height="10" fill="#f4f4f4"/>
+      </g>
+    </g>
+    <!-- Left face — solid dark -->
+    <path d="M0 34.64 L60 69.28 L60 138.56 L0 103.92 Z" fill="#0c0c0c"/>
+    <!-- Right face — mid gray -->
+    <path d="M60 69.28 L120 34.64 L120 103.92 L60 138.56 Z" fill="#2f2f2f"/>
+  </g>
+</svg>
