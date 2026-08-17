@@ -7,25 +7,14 @@ export const siteConfig = {
   fullName: "Nithish S S",
   marqueeText: "Nithish\u00A0\u2014\u00A0S\u00A0S", // Non-breaking spaces around em dash
   title: "Nithish \u2014 S S",
-  roles: [
-    "Senior Developer",
-    "Architect", 
-    "UI/UX Developer",
-  ],
+  roles: ["Developer", "Architect", "UI/UX Developer"],
   year: "2025",
 
   // ─── Hero Section ──────────────────────────────────────────
   hero: {
     brand: "Nithish",
-    footerLeft: [
-      "Senior Developer",
-      "Architect",
-      "UI/UX Developer",
-    ],
-    footerRight: [
-      "A portfolio by",
-      "Nithish S S",
-    ],
+    footerLeft: ["Developer", "Architect", "UI/UX Developer"],
+    footerRight: ["A portfolio by", "Nithish S S"],
   },
 
   // ─── Navigation ────────────────────────────────────────────
@@ -37,7 +26,10 @@ export const siteConfig = {
     ],
     social: [
       { label: "GitHub", href: "https://NITHISH0728.github.io/" },
-      { label: "LinkedIn", href: "https://www.linkedin.com/in/nithish-s-s-81a0212a5" },
+      {
+        label: "LinkedIn",
+        href: "https://www.linkedin.com/in/nithish-s-s-81a0212a5",
+      },
     ],
   },
 
@@ -50,10 +42,10 @@ export const siteConfig = {
       "My approach combines clean architecture with cutting-edge design to deliver products that users love.",
     ],
     stats: [
-      { label: "Years Experience", value: "5+" },
-      { label: "Projects Completed", value: "30+" },
-      { label: "Technologies", value: "20+" },
-      { label: "Happy Clients", value: "15+" },
+      { label: "Years Experience", value: "2" },
+      { label: "Freelance Projects", value: "10+" },
+      { label: "Certification", value: "30+" },
+      { label: "Real Clients", value: "10+" },
     ],
   },
 
@@ -111,14 +103,14 @@ export const siteConfig = {
         ],
       },
       {
-        name: "Tools & Design",
+        name: "Tools",
         items: [
-          { name: "Git", icon: "git" },
-          { name: "Docker", icon: "docker" },
-          { name: "Figma", icon: "figma" },
+          { name: "Claude", icon: "claude" },
+          { name: "Cursor", icon: "cursor" },
+          { name: "Antigravity", icon: "antigravity" },
+          { name: "n8n", icon: "n8n" },
+          { name: "GitHub", icon: "github" },
           { name: "VS Code", icon: "vscode" },
-          { name: "Vercel", icon: "vercel" },
-          { name: "AWS", icon: "aws" },
         ],
       },
     ],
@@ -153,7 +145,8 @@ export const siteConfig = {
   projects: [
     {
       title: "SkillForge LMS",
-      description: "A comprehensive Learning Management System with course builder, code arena, and real-time collaboration features.",
+      description:
+        "A comprehensive Learning Management System with course builder, code arena, and real-time collaboration features.",
       tech: ["React", "Node.js", "MongoDB", "TypeScript"],
       image: "/images/placeholder-project.svg",
       liveUrl: "#",
@@ -162,7 +155,8 @@ export const siteConfig = {
     },
     {
       title: "E-Commerce Platform",
-      description: "Full-stack e-commerce solution with payment integration, admin dashboard, and real-time inventory management.",
+      description:
+        "Full-stack e-commerce solution with payment integration, admin dashboard, and real-time inventory management.",
       tech: ["Next.js", "Stripe", "PostgreSQL", "Tailwind"],
       image: "/images/placeholder-project.svg",
       liveUrl: "#",
@@ -171,7 +165,8 @@ export const siteConfig = {
     },
     {
       title: "AI Chat Application",
-      description: "Real-time chat application with AI-powered responses, file sharing, and end-to-end encryption.",
+      description:
+        "Real-time chat application with AI-powered responses, file sharing, and end-to-end encryption.",
       tech: ["React", "OpenAI", "Socket.io", "Express"],
       image: "/images/placeholder-project.svg",
       liveUrl: "#",
@@ -180,7 +175,8 @@ export const siteConfig = {
     },
     {
       title: "Portfolio Generator",
-      description: "Dynamic portfolio generator that creates stunning personal websites from structured data input.",
+      description:
+        "Dynamic portfolio generator that creates stunning personal websites from structured data input.",
       tech: ["Next.js", "Three.js", "GSAP", "Framer Motion"],
       image: "/images/placeholder-project.svg",
       liveUrl: "#",
@@ -194,7 +190,8 @@ export const siteConfig = {
     {
       title: "Hackathon Winner",
       event: "TechFest 2024",
-      description: "First place in the national-level hackathon with 500+ participants.",
+      description:
+        "First place in the national-level hackathon with 500+ participants.",
       type: "trophy" as const,
     },
     {
@@ -206,7 +203,8 @@ export const siteConfig = {
     {
       title: "Best UI/UX Design",
       event: "DesignCon 2023",
-      description: "Award for outstanding user interface design in web applications.",
+      description:
+        "Award for outstanding user interface design in web applications.",
       type: "award" as const,
     },
     {
@@ -240,7 +238,8 @@ export const siteConfig = {
   // ─── SEO ───────────────────────────────────────────────────
   seo: {
     title: "Nithish S S — Senior Developer & Architect",
-    description: "Portfolio of Nithish S S — Senior Developer, Architect, and UI/UX Developer crafting premium digital experiences.",
+    description:
+      "Portfolio of Nithish S S — Senior Developer, Architect, and UI/UX Developer crafting premium digital experiences.",
     url: "https://nithish.dev",
     ogImage: "/images/og-image.png",
   },
