@@ -3,7 +3,13 @@
 import { useRef, useState, useEffect } from "react";
 import { motion, useInView } from "framer-motion";
 
-function StatCounter({ value, suffix = "" }: { value: number; suffix?: string }) {
+function StatCounter({
+  value,
+  suffix = "",
+}: {
+  value: number;
+  suffix?: string;
+}) {
   const [count, setCount] = useState(0);
   const ref = useRef<HTMLSpanElement>(null);
   const isInView = useInView(ref, { once: true });
@@ -32,7 +38,10 @@ function StatCounter({ value, suffix = "" }: { value: number; suffix?: string })
   }, [isInView, value]);
 
   return (
-    <span ref={ref} className="text-4xl sm:text-5xl lg:text-6xl font-black text-black tracking-tight">
+    <span
+      ref={ref}
+      className="text-4xl sm:text-5xl lg:text-6xl font-black text-black tracking-tight"
+    >
       {count}
       {suffix}
     </span>
@@ -44,36 +53,38 @@ export default function AchievementsSection() {
   const isInView = useInView(containerRef, { once: true, margin: "-50px" });
 
   const statMetrics = [
-    { label: "HACKATHON WINS", value: 5, suffix: "+" },
-    { label: "OPEN SOURCE PRS", value: 120, suffix: "+" },
-    { label: "DESIGN AWARDS", value: 8, suffix: "" },
-    { label: "COMMUNITY STARS", value: 500, suffix: "+" },
+    { label: "HACKATHON WINS", value: 5, suffix: "" },
+    { label: "CERTIFICATIONS", value: 30, suffix: "+" },
+    { label: "INTERNSHIPS", value: 2, suffix: "" },
+    { label: "FREELANCE PROJECTS", value: 10, suffix: "+" },
   ];
 
   const achievementCards = [
     {
       emoji: "🏆",
       title: "Hackathon Winner",
-      description: "First place in the national-level hackathon with 500+ participants.",
-      tag: "TECHFEST 2024",
+      description:
+        "First place in the national-level hackathon with 30+ participants.",
+      tag: "NEURATHON 2026",
     },
     {
       emoji: "🔥",
-      title: "Open Source Contributor",
-      description: "500+ contributions to open source projects in 2024.",
+      title: "High Value Certifications",
+      description:
+        "Meta certified full stack web development bootcamp ,Mongo DB Course",
       tag: "GITHUB",
     },
     {
       emoji: "🏅",
-      title: "Best UI/UX Design",
-      description: "Award for outstanding user interface design in web applications.",
-      tag: "DESIGNCON 2023",
+      title: "Stipend Internship",
+      description: "Award of ₹10000 in a Reputed Companies",
+      tag: "IQmath & Enlight Wisdom",
     },
     {
       emoji: "🎖️",
-      title: "Dean's List",
-      description: "Consistent academic excellence across all semesters.",
-      tag: "UNIVERSITY OF TECHNOLOGY",
+      title: "Freelancing",
+      description: "Worked on10+ Real Time Projects",
+      tag: "TNWebz",
     },
   ];
 
@@ -104,7 +115,10 @@ export default function AchievementsSection() {
           className="grid grid-cols-2 md:grid-cols-4 gap-5 md:gap-6 text-center mb-8 sm:mb-10"
         >
           {statMetrics.map((metric) => (
-            <div key={metric.label} className="flex flex-col items-center justify-center gap-1">
+            <div
+              key={metric.label}
+              className="flex flex-col items-center justify-center gap-1"
+            >
               <StatCounter value={metric.value} suffix={metric.suffix} />
               <span className="text-[10px] sm:text-xs font-semibold uppercase tracking-wider text-zinc-600">
                 {metric.label}
@@ -120,15 +134,23 @@ export default function AchievementsSection() {
               key={card.title}
               initial={{ opacity: 0, y: 20 }}
               animate={isInView ? { opacity: 1, y: 0 } : {}}
-              transition={{ duration: 0.7, delay: 0.2 + index * 0.1, ease: [0.16, 1, 0.3, 1] }}
+              transition={{
+                duration: 0.7,
+                delay: 0.2 + index * 0.1,
+                ease: [0.16, 1, 0.3, 1],
+              }}
               className="bg-white/90 backdrop-blur-md rounded-2xl p-5 sm:p-6 border border-zinc-200/90 shadow-[0_8px_25px_rgba(0,0,0,0.03)] flex flex-col justify-between hover:shadow-lg transition-all duration-300 relative overflow-hidden group min-h-[160px]"
             >
               <div>
                 <div className="flex items-center gap-2 mb-2">
                   <span className="text-base sm:text-lg">{card.emoji}</span>
-                  <h3 className="font-bold text-zinc-950 text-sm sm:text-base tracking-tight">{card.title}</h3>
+                  <h3 className="font-bold text-zinc-950 text-sm sm:text-base tracking-tight">
+                    {card.title}
+                  </h3>
                 </div>
-                <p className="text-xs text-zinc-600 leading-relaxed">{card.description}</p>
+                <p className="text-xs text-zinc-600 leading-relaxed">
+                  {card.description}
+                </p>
               </div>
               <div className="mt-5">
                 <span className="inline-block px-2.5 py-1 bg-zinc-100/90 border border-zinc-200 rounded text-[10px] font-mono font-medium uppercase tracking-wider text-zinc-600">
