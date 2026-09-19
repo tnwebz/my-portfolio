@@ -60,7 +60,7 @@ export default function SiteFooter() {
                     <span>LinkedIn Profile</span>
                   </a>
                   <a
-                    href="https://NITHISH0728.github.io/"
+                    href="https://github.com/NITHISH0728"
                     target="_blank"
                     rel="noopener noreferrer"
                     className="flex items-center gap-2.5 text-xs sm:text-sm text-zinc-300 hover:text-white transition-colors break-all"
@@ -78,7 +78,11 @@ export default function SiteFooter() {
                 </h3>
                 <div className="flex items-start gap-2.5 text-xs sm:text-sm text-zinc-300">
                   <MapPin size={14} className="mt-0.5 shrink-0 text-zinc-400" />
-                  <span>25 Ashmitha Garden<br />Chengalpattu 603101.</span>
+                  <span>
+                    25 Ashmitha Garden
+                    <br />
+                    Chengalpattu 603101.
+                  </span>
                 </div>
               </div>
             </div>

@@ -20,7 +20,7 @@ const NAV_LINKS = [
 ];
 
 const SOCIAL_LINKS = [
-  { label: "GitHub", href: "https://NITHISH0728.github.io/" },
+  { label: "GitHub", href: "https://github.com/NITHISH0728" },
   {
     label: "LinkedIn",
     href: "https://www.linkedin.com/in/nithish-s-s-81a0212a5",
