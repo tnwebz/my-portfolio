@@ -13,13 +13,8 @@ export default function SiteFooter() {
         <div className="bg-black rounded-3xl p-6 sm:p-8 lg:p-10 border border-zinc-900 shadow-2xl relative overflow-hidden">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-10 items-start">
             {/* Left Brand Title */}
-            <div className="lg:col-span-4 relative group select-none">
-              {/* Laser ambient radiance blur */}
-              <div
-                className="pointer-events-none absolute -top-8 -left-8 w-72 h-36 bg-[radial-gradient(ellipse_at_center,rgba(255,23,68,0.22)_0%,rgba(255,0,60,0.06)_45%,transparent_70%)] blur-2xl opacity-75 group-hover:opacity-100 transition-opacity duration-500 rounded-full"
-                aria-hidden="true"
-              />
-              <h2 className="relative z-10 font-anton text-4xl sm:text-5xl lg:text-6xl uppercase tracking-tight text-laser-glow leading-none inline-block cursor-default transition-transform duration-300 group-hover:scale-[1.01]">
+            <div className="lg:col-span-4 relative select-none">
+              <h2 className="font-anton text-4xl sm:text-5xl lg:text-6xl uppercase tracking-tight text-white leading-none inline-block cursor-default">
                 NITHISH S S
               </h2>
             </div>
