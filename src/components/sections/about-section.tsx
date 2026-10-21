@@ -2,12 +2,19 @@
 
 import { useRef, useState } from "react";
 import { motion, useInView } from "framer-motion";
-import { siteConfig } from "@/data/site-config";
+import { Camera, Edit3 } from "lucide-react";
 import BorderGlow from "@/components/ui/border-glow";
+import { useAdmin } from "@/context/admin-context";
+import ImageUploaderModal from "@/components/admin/image-uploader-modal";
+import AboutEditModal from "@/components/admin/about-edit-modal";
 
 export default function AboutSection() {
   const containerRef = useRef<HTMLDivElement>(null);
   const isInView = useInView(containerRef, { once: true, margin: "-100px" });
+  const { isAdmin, aboutData, updateAbout } = useAdmin();
+
+  const [imageModalOpen, setImageModalOpen] = useState(false);
+  const [textModalOpen, setTextModalOpen] = useState(false);
 
   // Mouse tilt state for 3D photo effect
   const [rotate, setRotate] = useState({ x: 0, y: 0 });
@@ -117,7 +124,7 @@ export default function AboutSection() {
             initial={{ opacity: 0, scale: 0.95 }}
             animate={isInView ? { opacity: 1, scale: 1 } : {}}
             transition={{ duration: 1, delay: 0.2, ease: [0.22, 1, 0.36, 1] }}
-            className="lg:col-span-5 flex justify-center"
+            className="lg:col-span-5 flex justify-center relative"
           >
             <BorderGlow
               interactive={false}
@@ -140,8 +147,8 @@ export default function AboutSection() {
               >
                 <div className="relative w-full h-full rounded-xl overflow-hidden">
                   <img
-                    src="/images/Nithish3.png"
-                    alt={siteConfig.fullName}
+                    src={aboutData.photo}
+                    alt={aboutData.name}
                     className="w-full h-full object-cover object-center filter brightness-90 contrast-105 group-hover:scale-105 transition-transform duration-700 ease-out"
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-80" />
@@ -152,12 +159,27 @@ export default function AboutSection() {
                     style={{ transform: "translateZ(30px)" }}
                   >
                     <p className="text-xs text-cream/70 uppercase tracking-widest font-geist">
-                      {siteConfig.fullName}
+                      {aboutData.name}
                     </p>
                     <p className="text-sm text-cream font-medium font-geist mt-0.5">
-                      Senior Developer & Architect
+                      {aboutData.role}
                     </p>
                   </div>
+
+                  {/* Admin Change Photo Button Overlay */}
+                  {isAdmin && (
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setImageModalOpen(true);
+                      }}
+                      className="absolute top-4 right-4 z-30 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-red-600 hover:bg-red-500 text-white text-xs font-semibold font-geist shadow-lg transition-transform hover:scale-105 cursor-pointer"
+                    >
+                      <Camera size={13} />
+                      <span>Change Photo (Cloudinary)</span>
+                    </button>
+                  )}
                 </div>
 
                 {/* Glowing Corner Accents */}
@@ -168,7 +190,21 @@ export default function AboutSection() {
           </motion.div>
 
           {/* Right Column — Bio & Stat Grid */}
-          <div className="lg:col-span-7 flex flex-col justify-between space-y-10">
+          <div className="lg:col-span-7 flex flex-col justify-between space-y-10 relative">
+            {/* Admin Edit Content Button */}
+            {isAdmin && (
+              <div className="flex justify-start">
+                <button
+                  type="button"
+                  onClick={() => setTextModalOpen(true)}
+                  className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-red-50 hover:bg-red-100 border border-red-200 text-red-700 text-xs font-semibold font-geist transition-colors cursor-pointer"
+                >
+                  <Edit3 size={13} />
+                  <span>Edit Heading, Bio &amp; Stats</span>
+                </button>
+              </div>
+            )}
+
             {/* Bio Heading */}
             <motion.h2
               initial={{ opacity: 0, y: 30 }}
@@ -176,8 +212,7 @@ export default function AboutSection() {
               transition={{ duration: 0.8, delay: 0.3, ease: [0.22, 1, 0.36, 1] }}
               className="text-3xl sm:text-4xl lg:text-5xl font-geist font-light text-cream leading-tight tracking-tight"
             >
-              Architecting scalable systems with an obsessive eye for{" "}
-              <span className="text-laser-red italic font-normal">visual precision</span>.
+              {aboutData.heading}
             </motion.h2>
 
             {/* Bio Paragraphs */}
@@ -187,7 +222,7 @@ export default function AboutSection() {
               transition={{ duration: 0.8, delay: 0.4, ease: [0.22, 1, 0.36, 1] }}
               className="space-y-4 text-text-secondary text-base sm:text-lg leading-relaxed font-geist"
             >
-              {siteConfig.about.bio.map((paragraph, index) => (
+              {aboutData.bio.map((paragraph, index) => (
                 <p key={index}>{paragraph}</p>
               ))}
             </motion.div>
@@ -199,9 +234,9 @@ export default function AboutSection() {
               transition={{ duration: 0.8, delay: 0.5, ease: [0.22, 1, 0.36, 1] }}
               className="grid grid-cols-2 sm:grid-cols-4 gap-4 pt-4"
             >
-              {siteConfig.about.stats.map((stat) => (
+              {aboutData.stats.map((stat, idx) => (
                 <motion.div
-                  key={stat.label}
+                  key={`${stat.label}-${idx}`}
                   whileHover={{ y: -4, scale: 1.02 }}
                   transition={{ duration: 0.2 }}
                   className="p-5 glass glass-hover rounded-xl border border-white/5 flex flex-col justify-between group cursor-default"
@@ -218,6 +253,23 @@ export default function AboutSection() {
           </div>
         </div>
       </div>
+
+      {/* Cloudinary Photo Uploader Modal */}
+      <ImageUploaderModal
+        isOpen={imageModalOpen}
+        onClose={() => setImageModalOpen(false)}
+        currentImage={aboutData.photo}
+        title="Upload About Profile Photo"
+        description="Upload a new portrait photo to Cloudinary. It will instantly update on your 3D About card."
+        onImageSelected={(url) => updateAbout({ photo: url })}
+      />
+
+      {/* Text & Stats Editor Modal */}
+      <AboutEditModal
+        isOpen={textModalOpen}
+        onClose={() => setTextModalOpen(false)}
+      />
     </section>
   );
 }
+

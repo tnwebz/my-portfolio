@@ -1,9 +1,10 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { X } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import HeroSVGTextReveal from "@/components/ui/hero-svg-text-reveal";
+import { useAdmin } from "@/context/admin-context";
 
 // ─── Type Definitions ────────────────────────────────────────
 type EaseTuple = [number, number, number, number];
@@ -31,6 +32,34 @@ const SOCIAL_LINKS = [
 export default function HeroSection() {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [showScrollNav, setShowScrollNav] = useState(false);
+  const { isAdmin, exitAdmin, setPasskeyModalOpen } = useAdmin();
+
+  const clickCountRef = useRef(0);
+  const clickTimerRef = useRef<NodeJS.Timeout | null>(null);
+
+  const handleLogoClick = useCallback(
+    (e: React.MouseEvent) => {
+      e.preventDefault();
+      clickCountRef.current += 1;
+      if (clickTimerRef.current) clearTimeout(clickTimerRef.current);
+
+      if (clickCountRef.current === 3) {
+        clickCountRef.current = 0;
+        if (!isAdmin) {
+          setPasskeyModalOpen(true);
+        }
+      } else if (clickCountRef.current === 2 && isAdmin) {
+        clickCountRef.current = 0;
+        exitAdmin();
+      } else {
+        clickTimerRef.current = setTimeout(() => {
+          clickCountRef.current = 0;
+        }, 550);
+      }
+    },
+    [isAdmin, exitAdmin, setPasskeyModalOpen]
+  );
+
 
   useEffect(() => {
     const handleScroll = () => {
@@ -205,18 +234,36 @@ export default function HeroSection() {
                 </a>
               </div>
 
-              {/* Center Logo */}
-              <a
-                href="#top"
-                className="flex items-center gap-3 group shrink-0 z-10"
+              {/* Center Logo with Admin Trigger */}
+              <div
+                onClick={handleLogoClick}
+                className="flex items-center gap-3 group shrink-0 z-10 cursor-pointer select-none"
+                title={
+                  isAdmin
+                    ? "Admin Active (Double-click N to exit)"
+                    : "Triple-click N for Admin access"
+                }
               >
-                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-zinc-950 text-white font-geist font-bold text-sm transition-transform group-hover:scale-105">
+                <div
+                  className={`flex h-8 w-8 items-center justify-center rounded-full font-geist font-bold text-sm transition-all duration-300 group-hover:scale-105 ${
+                    isAdmin
+                      ? "bg-red-600 text-white shadow-[0_0_15px_rgba(239,68,68,0.7)] ring-2 ring-red-400"
+                      : "bg-zinc-950 text-white"
+                  }`}
+                >
                   N
                 </div>
-                <span className="font-geist font-extrabold text-sm text-zinc-950 tracking-tight">
-                  Nithish S S
-                </span>
-              </a>
+                <div className="flex items-center gap-2">
+                  <span className="font-geist font-extrabold text-sm text-zinc-950 tracking-tight">
+                    Nithish S S
+                  </span>
+                  {isAdmin && (
+                    <span className="text-[9px] font-mono font-bold px-1.5 py-0.5 rounded-full bg-red-100 text-red-600 border border-red-200 uppercase tracking-wider">
+                      Admin
+                    </span>
+                  )}
+                </div>
+              </div>
 
               {/* Right links (Desktop) */}
               <div className="hidden sm:flex items-center gap-8 z-10">
@@ -319,18 +366,34 @@ export default function HeroSection() {
                 </a>
               </div>
 
-              {/* Center Logo - compact */}
-              <a
-                href="#top"
-                className="flex items-center gap-2 group shrink-0 z-10"
+              {/* Center Logo - compact with Admin Trigger */}
+              <div
+                onClick={handleLogoClick}
+                className="flex items-center gap-2 group shrink-0 z-10 cursor-pointer select-none"
+                title={
+                  isAdmin
+                    ? "Admin Active (Double-click N to exit)"
+                    : "Triple-click N for Admin access"
+                }
               >
-                <div className="flex h-6 w-6 items-center justify-center rounded-full bg-zinc-950 text-white font-geist font-bold text-xs transition-transform group-hover:scale-105">
+                <div
+                  className={`flex h-6 w-6 items-center justify-center rounded-full font-geist font-bold text-xs transition-all duration-300 group-hover:scale-105 ${
+                    isAdmin
+                      ? "bg-red-600 text-white shadow-[0_0_12px_rgba(239,68,68,0.7)] ring-2 ring-red-400"
+                      : "bg-zinc-950 text-white"
+                  }`}
+                >
                   N
                 </div>
                 <span className="font-geist font-bold text-xs text-zinc-950 tracking-tight">
                   Nithish
                 </span>
-              </a>
+                {isAdmin && (
+                  <span className="text-[8px] font-mono font-bold px-1 py-0.2 rounded-full bg-red-100 text-red-600 border border-red-200 uppercase tracking-wider">
+                    Admin
+                  </span>
+                )}
+              </div>
 
               {/* Right links (Desktop - compact) */}
               <div className="hidden sm:flex items-center gap-6 z-10">

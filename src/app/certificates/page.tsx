@@ -2,18 +2,33 @@
 
 import { useState, useEffect, useCallback, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ArrowLeft, ArrowRight, X, ZoomIn, ZoomOut, ChevronLeft } from "lucide-react";
+import { ArrowLeft, ArrowRight, X, ZoomIn, ZoomOut, ChevronLeft, Plus, Trash2, UploadCloud } from "lucide-react";
 import Link from "next/link";
-import { certificateCategories, type CertificateCategory } from "@/data/certificates";
+import { type CertificateCategory } from "@/data/certificates";
+import { useAdmin } from "@/context/admin-context";
+import CategoryEditModal from "@/components/admin/category-edit-modal";
+import ImageUploaderModal from "@/components/admin/image-uploader-modal";
 
 /* ─────────────────────────────────────────────────────────────
    /certificates — Dedicated Certificate Gallery Page
    ───────────────────────────────────────────────────────────── */
 
 export default function CertificatesPage() {
-  const [activeCategoryId, setActiveCategoryId] = useState(certificateCategories[0].id);
-  const [images, setImages] = useState<string[]>([]);
+  const {
+    isAdmin,
+    categoriesData,
+    categoryCertificates,
+    addCategoryCertificate,
+    deleteCategoryCertificate,
+  } = useAdmin();
+
+  const [activeCategoryId, setActiveCategoryId] = useState(categoriesData[0]?.id || "meta");
+  const [serverImages, setServerImages] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+
+  // Modals
+  const [categoryModalOpen, setCategoryModalOpen] = useState(false);
+  const [certUploadModalOpen, setCertUploadModalOpen] = useState(false);
 
   // Fullscreen viewer state
   const [viewerOpen, setViewerOpen] = useState(false);
@@ -24,7 +39,22 @@ export default function CertificatesPage() {
   const dragStart = useRef({ x: 0, y: 0 });
   const lastPinchDist = useRef(0);
 
-  const activeCategory = certificateCategories.find((c) => c.id === activeCategoryId)!;
+  const activeCategory =
+    categoriesData.find((c) => c.id === activeCategoryId) ||
+    categoriesData[0] || {
+      id: "general",
+      label: "General",
+      organization: "Certificates",
+      year: "2024",
+      description: "Verified certificates collection",
+      folder: "meta",
+      accentColor: "#2563eb",
+      icon: "C",
+    };
+
+  // Combine server images + user-uploaded images for this category
+  const customImages = categoryCertificates[activeCategoryId] || [];
+  const images = [...customImages, ...serverImages];
 
   // ── Fetch images when category changes ──
   useEffect(() => {
@@ -35,13 +65,16 @@ export default function CertificatesPage() {
       .then((res) => res.json())
       .then((data) => {
         if (!cancelled && data.images) {
-          setImages(data.images);
+          setServerImages(data.images);
+          setIsLoading(false);
+        } else if (!cancelled) {
+          setServerImages([]);
           setIsLoading(false);
         }
       })
       .catch(() => {
         if (!cancelled) {
-          setImages([]);
+          setServerImages([]);
           setIsLoading(false);
         }
       });
@@ -184,8 +217,8 @@ export default function CertificatesPage() {
 
           {/* Category pills — horizontally scrollable */}
           <div className="flex-1 overflow-x-auto scrollbar-none -mx-1 px-1">
-            <div className="flex gap-2 w-max">
-              {certificateCategories.map((cat: CertificateCategory) => {
+            <div className="flex items-center gap-2 w-max">
+              {categoriesData.map((cat: CertificateCategory) => {
                 const isActive = cat.id === activeCategoryId;
                 return (
                   <motion.button
@@ -226,6 +259,18 @@ export default function CertificatesPage() {
                   </motion.button>
                 );
               })}
+
+              {/* Admin Add Category Button */}
+              {isAdmin && (
+                <button
+                  type="button"
+                  onClick={() => setCategoryModalOpen(true)}
+                  className="flex items-center gap-1.5 px-4 py-2.5 rounded-full bg-red-600 hover:bg-red-500 text-white text-xs font-semibold font-geist shadow-sm whitespace-nowrap cursor-pointer transition-transform hover:scale-105"
+                >
+                  <Plus size={13} />
+                  <span>Add Category</span>
+                </button>
+              )}
             </div>
           </div>
         </div>
@@ -243,14 +288,30 @@ export default function CertificatesPage() {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -15 }}
             transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
-            className="mb-10"
+            className="mb-10 flex flex-col sm:flex-row sm:items-end justify-between gap-4"
           >
-            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold font-geist text-zinc-950 tracking-tight mb-2">
-              {activeCategory.label}
-            </h1>
-            <p className="text-sm sm:text-base text-zinc-500 font-geist max-w-xl leading-relaxed">
-              {activeCategory.organization} · {activeCategory.year} — {activeCategory.description}
-            </p>
+            <div>
+              <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold font-geist text-zinc-950 tracking-tight mb-2">
+                {activeCategory.label}
+              </h1>
+              <p className="text-sm sm:text-base text-zinc-500 font-geist max-w-xl leading-relaxed">
+                {activeCategory.organization} · {activeCategory.year} — {activeCategory.description}
+              </p>
+            </div>
+
+            {/* Admin Add Certificate Button */}
+            {isAdmin && (
+              <div className="shrink-0">
+                <button
+                  type="button"
+                  onClick={() => setCertUploadModalOpen(true)}
+                  className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-zinc-950 hover:bg-zinc-800 text-white text-xs font-semibold font-geist shadow-sm cursor-pointer transition-all"
+                >
+                  <UploadCloud size={15} />
+                  <span>Upload Certificate (Cloudinary)</span>
+                </button>
+              </div>
+            )}
           </motion.div>
         </AnimatePresence>
 
@@ -284,7 +345,7 @@ export default function CertificatesPage() {
           >
             {images.map((src, index) => (
               <motion.div
-                key={src}
+                key={`${src}-${index}`}
                 initial={{ opacity: 0, y: 20, scale: 0.96 }}
                 animate={{ opacity: 1, y: 0, scale: 1 }}
                 transition={{
@@ -310,6 +371,23 @@ export default function CertificatesPage() {
                   transition: "box-shadow 0.35s cubic-bezier(.22,1,.36,1), border-color 0.35s",
                 }}
               >
+                {/* Admin Delete Certificate Option */}
+                {isAdmin && (
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      if (confirm("Delete this certificate from category?")) {
+                        deleteCategoryCertificate(activeCategoryId, index);
+                      }
+                    }}
+                    title="Delete certificate"
+                    className="absolute top-3 right-3 z-30 p-2 rounded-full bg-white/90 hover:bg-red-600 hover:text-white text-zinc-700 shadow-md opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
+                  >
+                    <Trash2 size={13} />
+                  </button>
+                )}
+
                 {/* Glass reflection */}
                 <div
                   aria-hidden
@@ -367,8 +445,18 @@ export default function CertificatesPage() {
 
         {/* Empty state */}
         {!isLoading && images.length === 0 && (
-          <div className="flex items-center justify-center py-32">
+          <div className="flex flex-col items-center justify-center py-28 gap-3">
             <p className="text-sm text-zinc-400 font-mono">No certificates found in this category.</p>
+            {isAdmin && (
+              <button
+                type="button"
+                onClick={() => setCertUploadModalOpen(true)}
+                className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-zinc-950 text-white text-xs font-semibold font-geist"
+              >
+                <Plus size={13} />
+                <span>Upload First Certificate</span>
+              </button>
+            )}
           </div>
         )}
       </main>
@@ -527,6 +615,23 @@ export default function CertificatesPage() {
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* Category Creation Modal */}
+      <CategoryEditModal
+        isOpen={categoryModalOpen}
+        onClose={() => setCategoryModalOpen(false)}
+      />
+
+      {/* Cloudinary Certificate Upload Modal */}
+      <ImageUploaderModal
+        isOpen={certUploadModalOpen}
+        onClose={() => setCertUploadModalOpen(false)}
+        title={`Upload Certificate to ${activeCategory.label}`}
+        description="Select or drop a certificate file to upload directly to Cloudinary. It will appear immediately in this category gallery."
+        onImageSelected={(url) => {
+          addCategoryCertificate(activeCategoryId, url);
+        }}
+      />
     </div>
   );
 }

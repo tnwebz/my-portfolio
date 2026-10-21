@@ -2,6 +2,9 @@
 
 import { useRef, useState, useEffect } from "react";
 import { motion, useInView } from "framer-motion";
+import { Edit3 } from "lucide-react";
+import { useAdmin } from "@/context/admin-context";
+import AchievementsEditModal from "@/components/admin/achievements-edit-modal";
 
 function StatCounter({
   value,
@@ -49,44 +52,11 @@ function StatCounter({
 }
 
 export default function AchievementsSection() {
+  const { isAdmin, statMetrics, achievementCards } = useAdmin();
   const containerRef = useRef<HTMLDivElement>(null);
   const isInView = useInView(containerRef, { once: true, margin: "-50px" });
 
-  const statMetrics = [
-    { label: "HACKATHON WINS", value: 5, suffix: "" },
-    { label: "CERTIFICATIONS", value: 30, suffix: "+" },
-    { label: "INTERNSHIPS", value: 2, suffix: "" },
-    { label: "FREELANCE PROJECTS", value: 10, suffix: "+" },
-  ];
-
-  const achievementCards = [
-    {
-      emoji: "🏆",
-      title: "Hackathon Winner",
-      description:
-        "First place in the national-level hackathon with 30+ participants.",
-      tag: "NEURATHON 2026",
-    },
-    {
-      emoji: "🔥",
-      title: "High Value Certifications",
-      description:
-        "Meta certified full stack web development bootcamp ,Mongo DB Course",
-      tag: "GITHUB",
-    },
-    {
-      emoji: "🏅",
-      title: "Stipend Internship",
-      description: "Award of ₹10000 in a Reputed Companies",
-      tag: "IQmath & Enlight Wisdom",
-    },
-    {
-      emoji: "🎖️",
-      title: "Freelancing",
-      description: "Worked on10+ Real Time Projects",
-      tag: "TNWebz",
-    },
-  ];
+  const [editModalOpen, setEditModalOpen] = useState(false);
 
   return (
     <section
@@ -100,11 +70,25 @@ export default function AchievementsSection() {
           initial={{ opacity: 0, y: 15 }}
           animate={isInView ? { opacity: 1, y: 0 } : {}}
           transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-          className="text-center w-full overflow-hidden mb-8 sm:mb-10"
+          className="text-center w-full overflow-hidden mb-6 sm:mb-8"
         >
           <h2 className="font-anton text-[clamp(2.5rem,8vw,7.5rem)] tracking-tight uppercase leading-[0.92] text-fade-gradient select-none w-full text-center">
             HONORS &amp; TROPHIES
           </h2>
+
+          {/* Admin Edit Honors & Counts Trigger */}
+          {isAdmin && (
+            <div className="flex justify-center mt-4">
+              <button
+                type="button"
+                onClick={() => setEditModalOpen(true)}
+                className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-red-50 hover:bg-red-100 border border-red-200 text-red-700 text-xs font-semibold font-geist cursor-pointer transition-colors shadow-xs"
+              >
+                <Edit3 size={13} />
+                <span>Edit Honors &amp; Counter Values</span>
+              </button>
+            </div>
+          )}
         </motion.div>
 
         {/* Count-up Metrics Row */}
@@ -114,9 +98,9 @@ export default function AchievementsSection() {
           transition={{ duration: 0.8, delay: 0.15, ease: [0.16, 1, 0.3, 1] }}
           className="grid grid-cols-2 md:grid-cols-4 gap-5 md:gap-6 text-center mb-8 sm:mb-10"
         >
-          {statMetrics.map((metric) => (
+          {statMetrics.map((metric, idx) => (
             <div
-              key={metric.label}
+              key={`${metric.label}-${idx}`}
               className="flex flex-col items-center justify-center gap-1"
             >
               <StatCounter value={metric.value} suffix={metric.suffix} />
@@ -127,11 +111,11 @@ export default function AchievementsSection() {
           ))}
         </motion.div>
 
-        {/* 4 Glassy Cards Row */}
+        {/* Glassy Cards Row */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
           {achievementCards.map((card, index) => (
             <motion.div
-              key={card.title}
+              key={`${card.title}-${index}`}
               initial={{ opacity: 0, y: 20 }}
               animate={isInView ? { opacity: 1, y: 0 } : {}}
               transition={{
@@ -161,6 +145,13 @@ export default function AchievementsSection() {
           ))}
         </div>
       </div>
+
+      {/* Admin Honors & Metrics Modal */}
+      <AchievementsEditModal
+        isOpen={editModalOpen}
+        onClose={() => setEditModalOpen(false)}
+      />
     </section>
   );
 }
+

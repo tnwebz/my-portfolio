@@ -2,18 +2,11 @@
 
 import React, { useState, useRef, useEffect, useCallback, useMemo } from "react";
 import { motion, AnimatePresence, useInView } from "framer-motion";
-import { ArrowLeft, ArrowRight } from "lucide-react";
+import { ArrowLeft, ArrowRight, Camera, Edit3, Plus, Trash2 } from "lucide-react";
 import Link from "next/link";
-import { siteConfig } from "@/data/site-config";
-
-/* ─── Certificate Items Extended Metadata ──────────────────── */
-const certificationData = siteConfig.certifications.map((cert) => ({
-  id: cert.credentialId,
-  title: cert.name,
-  issuer: `${cert.institution} · ${cert.date}`,
-  description: `Verified credential ${cert.credentialId}. Issued by ${cert.institution} in ${cert.date}. Demonstrating expertise in cloud architecture, full-stack development, and modern web technologies.`,
-  src: cert.logo,
-}));
+import { useAdmin, type CertificationItem } from "@/context/admin-context";
+import CertificationEditModal from "@/components/admin/certification-edit-modal";
+import ImageUploaderModal from "@/components/admin/image-uploader-modal";
 
 /* ─── Gap calculator (from CircularTestimonials) ────────────── */
 function calculateGap(width: number) {
@@ -28,6 +21,7 @@ function calculateGap(width: number) {
 }
 
 export default function CertificationsSection() {
+  const { isAdmin, certificationsData, updateCertification, deleteCertification } = useAdmin();
   const [activeIndex, setActiveIndex] = useState(0);
   const [containerWidth, setContainerWidth] = useState(500);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -35,8 +29,21 @@ export default function CertificationsSection() {
   const autoplayRef = useRef<NodeJS.Timeout | null>(null);
   const isInView = useInView(containerRef, { once: true, margin: "-80px" });
 
-  const activeCert = certificationData[activeIndex];
-  const count = useMemo(() => certificationData.length, []);
+  const [editModalOpen, setEditModalOpen] = useState(false);
+  const [editTargetIndex, setEditTargetIndex] = useState<number | undefined>(undefined);
+  const [imageModalOpen, setImageModalOpen] = useState(false);
+
+  const safeIndex = Math.min(activeIndex, Math.max(0, certificationsData.length - 1));
+  const activeCert = certificationsData[safeIndex] || {
+    id: "empty",
+    title: "No Certifications Added",
+    issuer: "Add via Admin",
+    date: "2024",
+    credentialId: "N/A",
+    description: "Use admin mode to add your credentials.",
+    src: "/images/placeholder-project.svg",
+  };
+  const count = certificationsData.length || 1;
 
   // Responsive gap measurement
   useEffect(() => {
@@ -243,8 +250,25 @@ export default function CertificationsSection() {
             initial={{ opacity: 0, scale: 0.95 }}
             animate={isInView ? { opacity: 1, scale: 1 } : {}}
             transition={{ duration: 0.9, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
-            className="flex justify-center lg:justify-start"
+            className="flex flex-col items-center lg:items-start"
           >
+            {/* Admin Add Credential Button */}
+            {isAdmin && (
+              <div className="mb-4 flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setEditTargetIndex(undefined);
+                    setEditModalOpen(true);
+                  }}
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-red-600 hover:bg-red-500 text-white text-xs font-semibold font-geist shadow-sm cursor-pointer"
+                >
+                  <Plus size={13} />
+                  <span>Add Credential Box</span>
+                </button>
+              </div>
+            )}
+
             <div
               ref={imageContainerRef}
               className="relative w-full max-w-md"
@@ -253,24 +277,46 @@ export default function CertificationsSection() {
                 perspective: "1000px",
               }}
             >
-              {certificationData.map((cert, index) => (
-                <img
-                  key={cert.id}
-                  src={cert.src}
-                  alt={cert.title}
-                  draggable={false}
-                  className="select-none"
-                  style={{
-                    position: "absolute",
-                    width: "100%",
-                    height: "100%",
-                    objectFit: "cover",
-                    borderRadius: "1.5rem",
-                    boxShadow: "0 10px 30px rgba(0, 0, 0, 0.2)",
-                    ...getImageStyle(index),
-                  }}
-                />
-              ))}
+              {certificationsData.map((cert, index) => {
+                const isActive = index === safeIndex;
+                return (
+                  <div
+                    key={cert.id || index}
+                    style={{
+                      position: "absolute",
+                      width: "100%",
+                      height: "100%",
+                      ...getImageStyle(index),
+                    }}
+                    className="relative group/box"
+                  >
+                    <img
+                      src={cert.src}
+                      alt={cert.title}
+                      draggable={false}
+                      className="select-none w-full h-full object-cover rounded-[1.5rem]"
+                      style={{
+                        boxShadow: "0 10px 30px rgba(0, 0, 0, 0.2)",
+                      }}
+                    />
+
+                    {/* Admin Replace Image Button on Active Box */}
+                    {isAdmin && isActive && (
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setImageModalOpen(true);
+                        }}
+                        className="absolute bottom-4 right-4 z-40 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-zinc-950/90 hover:bg-zinc-900 text-white text-xs font-semibold font-geist shadow-lg backdrop-blur-md cursor-pointer transition-transform hover:scale-105"
+                      >
+                        <Camera size={13} />
+                        <span>Replace Image</span>
+                      </button>
+                    )}
+                  </div>
+                );
+              })}
             </div>
           </motion.div>
 
@@ -281,9 +327,41 @@ export default function CertificationsSection() {
             transition={{ duration: 0.9, delay: 0.3, ease: [0.16, 1, 0.3, 1] }}
             className="flex flex-col justify-center gap-6"
           >
+            {/* Admin Right-Side Actions */}
+            {isAdmin && (
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setEditTargetIndex(safeIndex);
+                    setEditModalOpen(true);
+                  }}
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-red-50 hover:bg-red-100 border border-red-200 text-red-700 text-xs font-semibold font-geist cursor-pointer"
+                >
+                  <Edit3 size={12} />
+                  <span>Edit Credential Details</span>
+                </button>
+                {certificationsData.length > 1 && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (confirm(`Delete credential "${activeCert.title}"?`)) {
+                        deleteCertification(safeIndex);
+                        setActiveIndex(0);
+                      }
+                    }}
+                    className="p-1.5 rounded-full text-zinc-400 hover:text-red-600 hover:bg-red-50 transition-colors cursor-pointer"
+                    title="Delete this credential"
+                  >
+                    <Trash2 size={14} />
+                  </button>
+                )}
+              </div>
+            )}
+
             <AnimatePresence mode="wait">
               <motion.div
-                key={activeCert.id}
+                key={activeCert.id || safeIndex}
                 initial={{ opacity: 0, x: 15 }}
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: -15 }}
@@ -297,7 +375,7 @@ export default function CertificationsSection() {
 
                 {/* Issuer & Year */}
                 <p className="text-xs sm:text-sm font-semibold font-mono text-zinc-500 tracking-wide uppercase">
-                  {activeCert.issuer}
+                  {activeCert.issuer} {activeCert.date ? `· ${activeCert.date}` : ""}
                 </p>
 
                 {/* Description */}
@@ -367,6 +445,29 @@ export default function CertificationsSection() {
 
         </div>
       </div>
+
+      {/* Certification Edit Modal */}
+      <CertificationEditModal
+        isOpen={editModalOpen}
+        onClose={() => setEditModalOpen(false)}
+        initialCert={editTargetIndex !== undefined ? certificationsData[editTargetIndex] : undefined}
+        editIndex={editTargetIndex}
+      />
+
+      {/* Cloudinary Image Replacement Modal for Active Box */}
+      <ImageUploaderModal
+        isOpen={imageModalOpen}
+        onClose={() => setImageModalOpen(false)}
+        currentImage={activeCert.src}
+        title="Replace Credential Image"
+        description="Upload a new certificate or credential photo directly to Cloudinary."
+        onImageSelected={(url) => {
+          updateCertification(safeIndex, {
+            ...activeCert,
+            src: url,
+          });
+        }}
+      />
     </section>
   );
 }

@@ -9,6 +9,9 @@ import {
   ParticleField,
   AuroraBackground,
 } from "@/components/effects";
+import { AdminProvider } from "@/context/admin-context";
+import AdminPasskeyModal from "@/components/admin/admin-passkey-modal";
+import AdminHUD from "@/components/admin/admin-hud";
 
 interface ClientShellProps {
   children: React.ReactNode;
@@ -16,45 +19,47 @@ interface ClientShellProps {
 
 /**
  * Client-side shell that wraps the entire page content.
- * Handles the loading screen → content transition.
+ * Handles the loading screen → content transition and Admin mode capabilities.
  */
 export default function ClientShell({ children }: ClientShellProps) {
   const [isReady, setIsReady] = useState(false);
 
   useEffect(() => {
-    // Wait for loading screen to finish, then reveal content
-    // The LoadingScreen component handles its own timing
-    // We just need to show content after the loading screen unmounts
     const timer = setTimeout(() => {
       setIsReady(true);
-    }, 100); // Small delay to ensure loading screen mounts first
+    }, 100);
 
     return () => clearTimeout(timer);
   }, []);
 
   return (
-    <SmoothScrollProvider>
-      <AuroraBackground />
-      <ParticleField />
-      <ScrollProgressBar />
-      <LoadingScreen />
-      <AnimatePresence>
-        {isReady && (
-          <motion.div
-            key="page-content"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ 
-              duration: 0.8, 
-              delay: 0.2,
-              ease: [0.22, 1, 0.36, 1] as [number, number, number, number],
-            }}
-            className="w-full"
-          >
-            {children}
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </SmoothScrollProvider>
+    <AdminProvider>
+      <SmoothScrollProvider>
+        <AuroraBackground />
+        <ParticleField />
+        <ScrollProgressBar />
+        <LoadingScreen />
+        <AdminPasskeyModal />
+        <AdminHUD />
+        <AnimatePresence>
+          {isReady && (
+            <motion.div
+              key="page-content"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ 
+                duration: 0.8, 
+                delay: 0.2,
+                ease: [0.22, 1, 0.36, 1] as [number, number, number, number],
+              }}
+              className="w-full"
+            >
+              {children}
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </SmoothScrollProvider>
+    </AdminProvider>
   );
 }
+

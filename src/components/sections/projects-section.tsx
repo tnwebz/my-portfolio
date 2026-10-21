@@ -2,10 +2,12 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { motion, useInView } from "framer-motion";
-import { ArrowLeft, ArrowRight, ArrowUpRight, Github } from "lucide-react";
-import { siteConfig } from "@/data/site-config";
+import { ArrowLeft, ArrowRight, ArrowUpRight, Github, Plus, Camera, Edit3, Trash2 } from "lucide-react";
 import ProjectDetailModal, { ProjectDetailData } from "@/components/ui/project-detail-modal";
 import BorderGlow from "@/components/ui/border-glow";
+import { useAdmin, type ProjectItem } from "@/context/admin-context";
+import ProjectEditModal from "@/components/admin/project-edit-modal";
+import ImageUploaderModal from "@/components/admin/image-uploader-modal";
 
 /* ─── Wireframe Cube Icon Component ─────────────────────────── */
 function WireframeCube() {
@@ -28,6 +30,7 @@ function WireframeCube() {
 
 /* ─── Main Projects Section Component ───────────────────────── */
 export default function ProjectsSection() {
+  const { isAdmin, projectsData, updateProject, deleteProject } = useAdmin();
   const sectionRef = useRef<HTMLElement>(null);
   const trackRef = useRef<HTMLDivElement>(null);
   const isInView = useInView(sectionRef, { once: true, margin: "-80px" });
@@ -37,6 +40,12 @@ export default function ProjectsSection() {
   // Modal State
   const [selectedProject, setSelectedProject] = useState<ProjectDetailData | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+
+  // Admin Modals
+  const [editModalOpen, setEditModalOpen] = useState(false);
+  const [editingIndex, setEditingIndex] = useState<number | undefined>(undefined);
+  const [imageModalOpen, setImageModalOpen] = useState(false);
+  const [imageTargetIndex, setImageTargetIndex] = useState<number | null>(null);
 
   const updateNav = useCallback(() => {
     const el = trackRef.current;
@@ -67,13 +76,15 @@ export default function ProjectsSection() {
     el.scrollBy({ left: direction * amount, behavior: "smooth" });
   };
 
-  const handleOpenDetail = (project: typeof siteConfig.projects[number]) => {
+  const handleOpenDetail = (project: ProjectItem) => {
     const detailData: ProjectDetailData = {
       title: project.title,
       description: project.description,
       problem:
+        project.problem ||
         "Outdated platforms lacked intuitive course building, real-time coding environments, and effective collaboration tools, hindering learning experiences.",
       solution:
+        project.solution ||
         "Developed a modern LMS using React and Node.js, integrating a robust code arena, real-time sockets for collaboration, and an intuitive course builder.",
       tech: project.tech ? [...project.tech] : ["React", "Node.js", "TypeScript"],
       liveUrl: project.liveUrl,
@@ -121,8 +132,23 @@ export default function ProjectsSection() {
             initial={{ opacity: 0, y: 20 }}
             animate={isInView ? { opacity: 1, y: 0 } : {}}
             transition={{ duration: 0.8, delay: 0.15, ease: [0.16, 1, 0.3, 1] }}
-            className="flex items-center gap-3 shrink-0 self-start lg:self-end"
+            className="flex items-center gap-3 shrink-0 self-start lg:self-end flex-wrap"
           >
+            {/* Admin Add Project Button */}
+            {isAdmin && (
+              <button
+                type="button"
+                onClick={() => {
+                  setEditingIndex(undefined);
+                  setEditModalOpen(true);
+                }}
+                className="inline-flex items-center gap-1.5 rounded-full bg-red-600 hover:bg-red-500 px-4 py-2 text-xs font-semibold text-white shadow-xs transition-all cursor-pointer"
+              >
+                <Plus size={14} />
+                <span>Add Project Box</span>
+              </button>
+            )}
+
             {/* Arrow Nav Buttons */}
             <div className="flex items-center gap-2">
               <button
@@ -130,7 +156,7 @@ export default function ProjectsSection() {
                 onClick={() => scrollByCard(-1)}
                 disabled={!canPrev}
                 aria-label="Previous projects"
-                className="flex h-10 w-10 items-center justify-center rounded-full border border-zinc-200 bg-white text-zinc-800 shadow-xs transition-all hover:border-zinc-950 hover:bg-zinc-950 hover:text-white disabled:cursor-not-allowed disabled:opacity-30 disabled:hover:border-zinc-200 disabled:hover:bg-white disabled:hover:text-zinc-800"
+                className="flex h-10 w-10 items-center justify-center rounded-full border border-zinc-200 bg-white text-zinc-800 shadow-xs transition-all hover:border-zinc-950 hover:bg-zinc-950 hover:text-white disabled:cursor-not-allowed disabled:opacity-30 disabled:hover:border-zinc-200 disabled:hover:bg-white disabled:hover:text-zinc-800 cursor-pointer"
               >
                 <ArrowLeft size={16} strokeWidth={2} />
               </button>
@@ -139,7 +165,7 @@ export default function ProjectsSection() {
                 onClick={() => scrollByCard(1)}
                 disabled={!canNext}
                 aria-label="Next projects"
-                className="flex h-10 w-10 items-center justify-center rounded-full border border-zinc-200 bg-white text-zinc-800 shadow-xs transition-all hover:border-zinc-950 hover:bg-zinc-950 hover:text-white disabled:cursor-not-allowed disabled:opacity-30 disabled:hover:border-zinc-200 disabled:hover:bg-white disabled:hover:text-zinc-800"
+                className="flex h-10 w-10 items-center justify-center rounded-full border border-zinc-200 bg-white text-zinc-800 shadow-xs transition-all hover:border-zinc-950 hover:bg-zinc-950 hover:text-white disabled:cursor-not-allowed disabled:opacity-30 disabled:hover:border-zinc-200 disabled:hover:bg-white disabled:hover:text-zinc-800 cursor-pointer"
               >
                 <ArrowRight size={16} strokeWidth={2} />
               </button>
@@ -167,12 +193,12 @@ export default function ProjectsSection() {
             ref={trackRef}
             className="flex gap-5 sm:gap-6 overflow-x-auto scroll-smooth pb-6 pt-2 w-full min-w-0 snap-x snap-mandatory [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
           >
-            {siteConfig.projects.map((project, idx) => (
+            {projectsData.map((project, idx) => (
               <article
-                key={project.title}
+                key={`${project.title}-${idx}`}
                 data-project-card
                 onClick={() => handleOpenDetail(project)}
-                className="group flex w-[min(100%,290px)] sm:w-[320px] lg:w-[340px] shrink-0 snap-start flex-col transition-transform duration-300 hover:-translate-y-1.5 cursor-pointer"
+                className="group flex w-[min(100%,290px)] sm:w-[320px] lg:w-[340px] shrink-0 snap-start flex-col transition-transform duration-300 hover:-translate-y-1.5 cursor-pointer relative"
               >
                 <BorderGlow
                   interactive={true}
@@ -208,6 +234,22 @@ export default function ProjectsSection() {
                       <div className="absolute top-4 left-4 rounded-full bg-zinc-950/80 px-2.5 py-0.5 text-[10px] font-mono font-medium text-white backdrop-blur-xs">
                         Featured
                       </div>
+                    )}
+
+                    {/* Admin Image Replace Button */}
+                    {isAdmin && (
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setImageTargetIndex(idx);
+                          setImageModalOpen(true);
+                        }}
+                        className="absolute bottom-3 right-3 z-30 inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-zinc-950/90 hover:bg-zinc-900 text-white text-[11px] font-semibold font-geist shadow-md backdrop-blur-md cursor-pointer transition-transform hover:scale-105"
+                      >
+                        <Camera size={12} />
+                        <span>Upload Photo</span>
+                      </button>
                     )}
                   </div>
 
@@ -253,18 +295,50 @@ export default function ProjectsSection() {
                         <ArrowRight size={14} strokeWidth={2} className="transition-transform group-hover:translate-x-1" />
                       </button>
 
-                      {project.githubUrl && project.githubUrl !== "#" && (
-                        <a
-                          href={project.githubUrl}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          onClick={(e) => e.stopPropagation()}
-                          aria-label={`${project.title} GitHub repository`}
-                          className="text-zinc-400 transition-colors hover:text-white"
-                        >
-                          <Github size={16} />
-                        </a>
-                      )}
+                      <div className="flex items-center gap-2">
+                        {isAdmin && (
+                          <>
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setEditingIndex(idx);
+                                setEditModalOpen(true);
+                              }}
+                              title="Edit Project Details"
+                              className="p-1.5 text-zinc-400 hover:text-white rounded-md transition-colors cursor-pointer"
+                            >
+                              <Edit3 size={14} />
+                            </button>
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                if (confirm(`Delete project "${project.title}"?`)) {
+                                  deleteProject(idx);
+                                }
+                              }}
+                              title="Delete Project"
+                              className="p-1.5 text-zinc-400 hover:text-red-400 rounded-md transition-colors cursor-pointer"
+                            >
+                              <Trash2 size={14} />
+                            </button>
+                          </>
+                        )}
+
+                        {project.githubUrl && project.githubUrl !== "#" && (
+                          <a
+                            href={project.githubUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            onClick={(e) => e.stopPropagation()}
+                            aria-label={`${project.title} GitHub repository`}
+                            className="text-zinc-400 transition-colors hover:text-white"
+                          >
+                            <Github size={16} />
+                          </a>
+                        )}
+                      </div>
                     </div>
                   </div>
                 </BorderGlow>
@@ -279,6 +353,33 @@ export default function ProjectsSection() {
         project={selectedProject}
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
+      />
+
+      {/* Project Edit & Creation Modal */}
+      <ProjectEditModal
+        isOpen={editModalOpen}
+        onClose={() => setEditModalOpen(false)}
+        initialProject={editingIndex !== undefined ? projectsData[editingIndex] : undefined}
+        editIndex={editingIndex}
+      />
+
+      {/* Cloudinary Project Image Uploader Modal */}
+      <ImageUploaderModal
+        isOpen={imageModalOpen}
+        onClose={() => {
+          setImageModalOpen(false);
+          setImageTargetIndex(null);
+        }}
+        title="Upload Project Screenshot"
+        description="Upload a high-resolution screenshot of this project directly to Cloudinary."
+        onImageSelected={(url) => {
+          if (imageTargetIndex !== null && projectsData[imageTargetIndex]) {
+            updateProject(imageTargetIndex, {
+              ...projectsData[imageTargetIndex],
+              image: url,
+            });
+          }
+        }}
       />
     </section>
   );

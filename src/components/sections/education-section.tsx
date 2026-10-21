@@ -2,7 +2,10 @@
 
 import { useRef, useState, useEffect } from "react";
 import { motion, AnimatePresence, useInView } from "framer-motion";
+import { Plus, Pencil, Trash2 } from "lucide-react";
 import { siteConfig } from "@/data/site-config";
+import { useAdmin, type SkillItem, type SkillsData } from "@/context/admin-context";
+import SkillEditModal from "@/components/admin/skill-edit-modal";
 
 type TabKey = "education" | "skills";
 
@@ -272,7 +275,43 @@ function TimelineNode({
   );
 }
 
-function SkillCard({ item, index, isInView }: { item: TechItem; index: number; isInView: boolean }) {
+function SkillCard({
+  item,
+  index,
+  isInView,
+  isAdmin,
+  onEdit,
+  onDelete,
+}: {
+  item: SkillItem;
+  index: number;
+  isInView: boolean;
+  isAdmin?: boolean;
+  onEdit?: () => void;
+  onDelete?: () => void;
+}) {
+  const renderIcon = () => {
+    if (item.iconUrl) {
+      return (
+        <img
+          src={item.iconUrl}
+          alt={item.name}
+          className="w-7 h-7 sm:w-8 sm:h-8 object-contain"
+          onError={(e) => {
+            (e.target as any).src = "https://via.placeholder.com/32?text=Logo";
+          }}
+        />
+      );
+    }
+    if (item.presetName && Icons[item.presetName as keyof typeof Icons]) {
+      return Icons[item.presetName as keyof typeof Icons];
+    }
+    if ((item as any).icon) {
+      return (item as any).icon;
+    }
+    return <span className="font-bold text-xs">{item.name.slice(0, 2)}</span>;
+  };
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 15, scale: 0.92 }}
@@ -283,8 +322,41 @@ function SkillCard({ item, index, isInView }: { item: TechItem; index: number; i
       style={{ boxShadow: `0 12px 28px -6px ${item.glowColor}, 0 2px 6px rgba(0,0,0,0.03)` }}
     >
       <div className={`absolute inset-0 rounded-2xl bg-gradient-to-br ${item.iconBg} opacity-50 group-hover:opacity-80 transition-opacity duration-300 pointer-events-none`} />
+      
+      {/* Admin Action Buttons on Hover */}
+      {isAdmin && (
+        <div className="absolute top-1 right-1 z-20 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+          {onEdit && (
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                onEdit();
+              }}
+              title="Edit Skill"
+              className="p-1 rounded-full bg-white/90 hover:bg-zinc-950 hover:text-white text-zinc-700 shadow-xs transition-colors cursor-pointer"
+            >
+              <Pencil size={10} />
+            </button>
+          )}
+          {onDelete && (
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                onDelete();
+              }}
+              title="Delete Skill"
+              className="p-1 rounded-full bg-white/90 hover:bg-red-600 hover:text-white text-zinc-700 shadow-xs transition-colors cursor-pointer"
+            >
+              <Trash2 size={10} />
+            </button>
+          )}
+        </div>
+      )}
+
       <div className="relative z-10 flex items-center justify-center text-zinc-900 group-hover:scale-110 transition-transform duration-300">
-        {item.icon}
+        {renderIcon()}
       </div>
       <span className="relative z-10 text-[10px] sm:text-[11px] font-semibold text-zinc-600 tracking-tight mt-1.5 text-center line-clamp-1">
         {item.name}
@@ -555,73 +627,221 @@ function EducationPanel({ isInView }: { isInView: boolean }) {
 
 /* ─── Skills Panel ─────────────────────────────────────────── */
 function SkillsPanel({ isInView }: { isInView: boolean }) {
+  const { isAdmin, skillsData, deleteSkill } = useAdmin();
+  const [modalOpen, setModalOpen] = useState(false);
+  const [targetGroup, setTargetGroup] = useState<keyof SkillsData>("programmingLanguages");
+  const [editIndex, setEditIndex] = useState<number | undefined>(undefined);
+  const [initialSkill, setInitialSkill] = useState<SkillItem | undefined>(undefined);
+
+  const openAdd = (group: keyof SkillsData) => {
+    setTargetGroup(group);
+    setEditIndex(undefined);
+    setInitialSkill(undefined);
+    setModalOpen(true);
+  };
+
+  const openEdit = (group: keyof SkillsData, index: number, skill: SkillItem) => {
+    setTargetGroup(group);
+    setEditIndex(index);
+    setInitialSkill(skill);
+    setModalOpen(true);
+  };
+
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-6 items-start">
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={isInView ? { opacity: 1, y: 0 } : {}}
-        transition={{ duration: 0.8, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
-        className="lg:col-span-3 flex flex-col gap-5"
-      >
-        <h3 className="text-xl sm:text-2xl font-geist font-normal text-zinc-900 tracking-tight">
-          Programming Languages
-        </h3>
-        <div className="flex flex-wrap gap-3 sm:gap-4">
-          {programmingLanguages.map((item, index) => (
-            <SkillCard key={item.name} item={item} index={index} isInView={isInView} />
-          ))}
-        </div>
-      </motion.div>
+    <>
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-6 items-start">
+        {/* Programming Languages */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={isInView ? { opacity: 1, y: 0 } : {}}
+          transition={{ duration: 0.8, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
+          className="lg:col-span-3 flex flex-col gap-5"
+        >
+          <div className="flex items-center justify-between">
+            <h3 className="text-xl sm:text-2xl font-geist font-normal text-zinc-900 tracking-tight">
+              Programming Languages
+            </h3>
+            {isAdmin && (
+              <button
+                type="button"
+                onClick={() => openAdd("programmingLanguages")}
+                className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-red-50 hover:bg-red-100 border border-red-200 text-red-700 text-[11px] font-semibold font-geist cursor-pointer"
+              >
+                <Plus size={11} />
+                <span>Add</span>
+              </button>
+            )}
+          </div>
+          <div className="flex flex-wrap gap-3 sm:gap-4">
+            {skillsData.programmingLanguages.map((item, index) => (
+              <SkillCard
+                key={`${item.name}-${index}`}
+                item={item}
+                index={index}
+                isInView={isInView}
+                isAdmin={isAdmin}
+                onEdit={() => openEdit("programmingLanguages", index, item)}
+                onDelete={() => deleteSkill("programmingLanguages", index)}
+              />
+            ))}
+          </div>
+        </motion.div>
 
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={isInView ? { opacity: 1, y: 0 } : {}}
-        transition={{ duration: 0.8, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
-        className="lg:col-span-6 flex flex-col gap-5"
-      >
-        <h3 className="text-xl sm:text-2xl font-geist font-normal text-zinc-900 tracking-tight">
-          Web Development
-        </h3>
-        <div className="flex flex-col gap-3">
-          <span className="text-[11px] font-mono font-semibold uppercase tracking-[0.2em] text-zinc-400">FRONTEND</span>
-          <div className="flex flex-wrap gap-3 sm:gap-4">
-            {webDevFrontend.map((item, index) => (
-              <SkillCard key={item.name} item={item} index={index + 3} isInView={isInView} />
-            ))}
-          </div>
-        </div>
-        <div className="flex flex-col gap-3">
-          <span className="text-[11px] font-mono font-semibold uppercase tracking-[0.2em] text-zinc-400">BACKEND</span>
-          <div className="flex flex-wrap gap-3 sm:gap-4">
-            {webDevBackend.map((item, index) => (
-              <SkillCard key={item.name} item={item} index={index + 7} isInView={isInView} />
-            ))}
-          </div>
-        </div>
-        <div className="flex flex-col gap-3">
-          <span className="text-[11px] font-mono font-semibold uppercase tracking-[0.2em] text-zinc-400">DATABASE</span>
-          <div className="flex flex-wrap gap-3 sm:gap-4">
-            {webDevDatabase.map((item, index) => (
-              <SkillCard key={item.name} item={item} index={index + 10} isInView={isInView} />
-            ))}
-          </div>
-        </div>
-      </motion.div>
+        {/* Web Development */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={isInView ? { opacity: 1, y: 0 } : {}}
+          transition={{ duration: 0.8, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
+          className="lg:col-span-6 flex flex-col gap-5"
+        >
+          <h3 className="text-xl sm:text-2xl font-geist font-normal text-zinc-900 tracking-tight">
+            Web Development
+          </h3>
 
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={isInView ? { opacity: 1, y: 0 } : {}}
-        transition={{ duration: 0.8, delay: 0.3, ease: [0.16, 1, 0.3, 1] }}
-        className="lg:col-span-3 flex flex-col gap-5"
-      >
-        <h3 className="text-xl sm:text-2xl font-geist font-normal text-zinc-900 tracking-tight">Tools</h3>
-        <div className="flex flex-wrap gap-3 sm:gap-4">
-          {tools.map((item, index) => (
-            <SkillCard key={item.name} item={item} index={index + 13} isInView={isInView} />
-          ))}
-        </div>
-      </motion.div>
-    </div>
+          {/* Frontend */}
+          <div className="flex flex-col gap-3">
+            <div className="flex items-center justify-between">
+              <span className="text-[11px] font-mono font-semibold uppercase tracking-[0.2em] text-zinc-400">
+                FRONTEND
+              </span>
+              {isAdmin && (
+                <button
+                  type="button"
+                  onClick={() => openAdd("webDevFrontend")}
+                  className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-red-50 hover:bg-red-100 border border-red-200 text-red-700 text-[10px] font-semibold font-geist cursor-pointer"
+                >
+                  <Plus size={10} />
+                  <span>Add Frontend</span>
+                </button>
+              )}
+            </div>
+            <div className="flex flex-wrap gap-3 sm:gap-4">
+              {skillsData.webDevFrontend.map((item, index) => (
+                <SkillCard
+                  key={`${item.name}-${index}`}
+                  item={item}
+                  index={index + 3}
+                  isInView={isInView}
+                  isAdmin={isAdmin}
+                  onEdit={() => openEdit("webDevFrontend", index, item)}
+                  onDelete={() => deleteSkill("webDevFrontend", index)}
+                />
+              ))}
+            </div>
+          </div>
+
+          {/* Backend */}
+          <div className="flex flex-col gap-3">
+            <div className="flex items-center justify-between">
+              <span className="text-[11px] font-mono font-semibold uppercase tracking-[0.2em] text-zinc-400">
+                BACKEND
+              </span>
+              {isAdmin && (
+                <button
+                  type="button"
+                  onClick={() => openAdd("webDevBackend")}
+                  className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-red-50 hover:bg-red-100 border border-red-200 text-red-700 text-[10px] font-semibold font-geist cursor-pointer"
+                >
+                  <Plus size={10} />
+                  <span>Add Backend</span>
+                </button>
+              )}
+            </div>
+            <div className="flex flex-wrap gap-3 sm:gap-4">
+              {skillsData.webDevBackend.map((item, index) => (
+                <SkillCard
+                  key={`${item.name}-${index}`}
+                  item={item}
+                  index={index + 7}
+                  isInView={isInView}
+                  isAdmin={isAdmin}
+                  onEdit={() => openEdit("webDevBackend", index, item)}
+                  onDelete={() => deleteSkill("webDevBackend", index)}
+                />
+              ))}
+            </div>
+          </div>
+
+          {/* Database */}
+          <div className="flex flex-col gap-3">
+            <div className="flex items-center justify-between">
+              <span className="text-[11px] font-mono font-semibold uppercase tracking-[0.2em] text-zinc-400">
+                DATABASE
+              </span>
+              {isAdmin && (
+                <button
+                  type="button"
+                  onClick={() => openAdd("webDevDatabase")}
+                  className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-red-50 hover:bg-red-100 border border-red-200 text-red-700 text-[10px] font-semibold font-geist cursor-pointer"
+                >
+                  <Plus size={10} />
+                  <span>Add Database</span>
+                </button>
+              )}
+            </div>
+            <div className="flex flex-wrap gap-3 sm:gap-4">
+              {skillsData.webDevDatabase.map((item, index) => (
+                <SkillCard
+                  key={`${item.name}-${index}`}
+                  item={item}
+                  index={index + 10}
+                  isInView={isInView}
+                  isAdmin={isAdmin}
+                  onEdit={() => openEdit("webDevDatabase", index, item)}
+                  onDelete={() => deleteSkill("webDevDatabase", index)}
+                />
+              ))}
+            </div>
+          </div>
+        </motion.div>
+
+        {/* Tools */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={isInView ? { opacity: 1, y: 0 } : {}}
+          transition={{ duration: 0.8, delay: 0.3, ease: [0.16, 1, 0.3, 1] }}
+          className="lg:col-span-3 flex flex-col gap-5"
+        >
+          <div className="flex items-center justify-between">
+            <h3 className="text-xl sm:text-2xl font-geist font-normal text-zinc-900 tracking-tight">
+              Tools
+            </h3>
+            {isAdmin && (
+              <button
+                type="button"
+                onClick={() => openAdd("tools")}
+                className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-red-50 hover:bg-red-100 border border-red-200 text-red-700 text-[11px] font-semibold font-geist cursor-pointer"
+              >
+                <Plus size={11} />
+                <span>Add</span>
+              </button>
+            )}
+          </div>
+          <div className="flex flex-wrap gap-3 sm:gap-4">
+            {skillsData.tools.map((item, index) => (
+              <SkillCard
+                key={`${item.name}-${index}`}
+                item={item}
+                index={index + 13}
+                isInView={isInView}
+                isAdmin={isAdmin}
+                onEdit={() => openEdit("tools", index, item)}
+                onDelete={() => deleteSkill("tools", index)}
+              />
+            ))}
+          </div>
+        </motion.div>
+      </div>
+
+      {/* Skill Add / Edit Modal */}
+      <SkillEditModal
+        isOpen={modalOpen}
+        onClose={() => setModalOpen(false)}
+        targetGroup={targetGroup}
+        initialSkill={initialSkill}
+        editIndex={editIndex}
+      />
+    </>
   );
 }
 
